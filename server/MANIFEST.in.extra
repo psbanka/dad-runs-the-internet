@@ -1,0 +1,11 @@
+include share/tnt-templates/registration/*
+include share/tnt-templates/html_files/*
+include share/tnt-templates/static_files/images/*
+include share/tnt-templates/static_files/js/*
+include share/tnt-templates/static_files/css/*
+include share/tnt-templates/static_files/css/redmond/*
+include share/tnt-templates/static_files/css/redmond/images/*
+include share/tnt-templates/static_files/*
+include share/tnt-templates/*
+include share/tnt-templates/tnt/*
+include share/tnt-templates/tnt/form/*
