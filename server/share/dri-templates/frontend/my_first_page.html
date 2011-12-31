@@ -1,0 +1,64 @@
+{% extends "dojango/base.html" %}
+
+{# setting the <title> attribute #}
+{% block dojango_page_title %}My first dojo page{% endblock %}
+{% block dojango_header_extra %}
+<style type="text/css">
+    .box {
+        margin-top: 10px;
+        color: #292929;
+        width: 300px;
+        border: 1px solid #BABABA;
+        background-color: #ddd;
+        padding-left: 10px;
+        padding-right: 10px;
+        margin-left: 10px;
+        margin-bottom: 1em;
+        -o-border-radius: 10px;
+        -moz-border-radius: 12px;
+        -webkit-border-radius: 10px;
+        -webkit-box-shadow: 0px 3px 7px #adadad;
+        border-radius: 10px;
+        -moz-box-sizing: border-box;
+        -opera-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        -khtml-box-sizing: border-box;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+</style>
+<script type="text/javascript">
+    // load the modules you need on the page!
+    dojo.require("dijit.form.Button");
+    var textBigger, textSmaller;
+    // just access your dom after everything is loaded!
+    dojo.addOnLoad(function(){
+        // defining some animations
+        textBigger = dojo.animateProperty(
+            {node: "animDiv",
+            duration: 1000,
+            properties: {fontSize: {end: 25, unit: "px"}}
+        });
+
+        textSmaller = dojo.animateProperty(
+            {node: "animDiv",
+            duration: 1000,
+            properties: {fontSize: {end: 10, unit: "px"}}
+        });
+    });
+</script>
+{% endblock %}
+{% block dojango_content %}
+<button dojoType="dijit.form.Button" onClick="textBigger.play();">Text Embiggen</button>
+<button dojoType="dijit.form.Button" onClick="textSmaller.play();">Text UnEmbiggen</button>
+<div id="animDiv" class="box">
+<p>
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean
+semper sagittis velit. Cras in mi. Duis porta mauris ut ligula.
+Proin porta rutrum lacus. Etiam consequat scelerisque quam. Nulla
+facilisi. Maecenas luctus venenatis nulla. In sit amet dui non mi
+semper iaculis. Sed molestie tortor at ipsum. Morbi dictum rutrum
+magna. Sed vitae risus.
+</p>
+</div>
+{% endblock %}
