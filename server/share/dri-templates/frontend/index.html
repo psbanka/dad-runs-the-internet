@@ -1,0 +1,182 @@
+{% extends "dojango/base.html" %}
+
+{% block dojango_post_dj_config %}
+	<script>
+		djConfig.parseOnLoad = false;
+	</script>
+{% endblock %}
+
+{% block dojango_header_extra %}
+    <link href="/css/frontpage.css" media="screen, projection" rel="stylesheet" type="text/css" />
+	<script type="text/javascript">
+		window.__globalList = {dojo: true, dijit: true, dojox: true, djConfig: true};
+		for(var i in window){
+			window.__globalList[i] = true;
+		}
+	</script>
+
+{% endblock %}
+
+{% block dojango_body %}
+<body class="{{ DOJANGO.THEME }}">
+	<!-- basic preloader: -->
+	<div id="loader"><div id="loaderInner">Loading page... </div></div>
+
+	<!-- "main" BorderContainer just contains page title and another BorderContainer -->
+	<div id="main" dojoType="dijit.layout.BorderContainer">
+		<h1 id="header" dojoType="dijit.layout.ContentPane" region="top">Dad Runs The Internet</h1>
+		<!-- "mainSplit" BorderContainer has all the real content -->
+		<div dojoType="dijit.layout.BorderContainer" liveSplitters="false" design="sidebar"
+			region="center" id="mainSplit">
+	
+			<div dojoType="dijit.layout.AccordionContainer" duration="200"
+				minSize="20" style="width: 300px;" id="leftAccordion" region="leading" splitter="true">
+
+				<div dojoType="dijit.layout.AccordionPane" title="Known devices" selected="true">
+                    <div style="padding:8px">
+                        <h2>Windows computers</h2>
+                        <ul>
+                            <li>58:94:6b:a4:da:bc</li>
+                            <li>48:5b:39:e8:5d:f9</li>
+                        </ul>
+                        <h2>Apple Mobile Devices</h2>
+                        <ul>
+                            <li>58:94:6b:a4:da:bc</li>
+                            <li>48:5b:39:e8:5d:f9</li>
+                        </ul>
+				    </div>
+				</div>
+
+				<div dojoType="dijit.layout.AccordionPane" title="Unknown Devices">
+                        <h2>Windows computers</h2>
+                        <ul>
+                            <li>58:94:6b:a4:da:bc</li>
+                            <li>48:5b:39:e8:5d:f9</li>
+                        </ul>
+                        <h2>Apple Mobile Devices</h2>
+                        <ul>
+                            <li>58:94:6b:a4:da:bc</li>
+                            <li>48:5b:39:e8:5d:f9</li>
+                        </ul>
+				</div>
+				<div dojoType="dijit.layout.AccordionPane" title="Policies">
+                        <hr class="spacer">
+				</div>
+				<div dojoType="dijit.layout.AccordionPane" title="Reports">
+                        <hr class="spacer">
+				</div>
+	
+				<div dojoType="dijit.layout.AccordionPane" title="Schedules">
+					<!-- calendar widget pane -->
+					<input id="calendar1" dojoType="dijit._Calendar" onChange="myHandler(this.id,arguments[0])">
+				</div>
+	
+				<div dojoType="dijit.layout.AccordionPane" title="Policies">
+                        <hr class="spacer">
+				</div>
+			</div><!-- end AccordionContainer -->
+
+			<!-- top tabs (marked as "center" to take up the main part of the BorderContainer) -->
+			<div dojoType="dijit.layout.TabContainer" region="center" id="topTabs">
+				<!-- start upper tab -->
+				<div id="tab3" dojoType="dijit.layout.ContentPane" title="Welcome"
+					style="padding:10px; display:none;  ">
+
+					<div class="box">
+                    <p>Welcome to Dad Runs the Internet, the site where you get to wear the pants on your
+                       own WiFi network. We put you in charge of your own stuff.<p>
+					</div><!-- end:box -->
+
+				</div><!-- end upper tab-->
+
+			</div><!-- end of region="center" TabContainer -->
+	
+			<!-- bottom right tabs -->
+			<div dojoType="dijit.layout.TabContainer" id="bottomTabs" tabPosition="bottom" selectedChild="btab1" region="bottom" splitter="true">
+
+				<!-- btab 1 -->
+				<div id="btab1" dojoType="dijit.layout.ContentPane" title="Help" style=" padding:10px; ">
+                    <p>Explore your network! On the left of the screen you will find known and unknown computers
+                       that DRI is aware of. Identify all the computers that you know about and apply policies to
+                       them.
+				</div><!-- end:info btab1 -->
+
+				<div id="btab3" dojoType="dijit.layout.ContentPane" title="ALERT: Some SHIT is going down" closable="true">
+					<p>Some Shit is going down, dude. Here's where you can get those bastards before they get you.</p>
+				</div><!-- btab3 -->
+
+			</div><!-- end Bottom TabContainer -->
+
+		</div> <!-- end of "mainSplit" BorderContainer -->
+	</div><!-- end of "main" BorderContainer -->
+
+	<script type="text/javascript"> // dojo.requires()
+
+		var loadingEl = dojo.byId("loaderInner");
+
+		dojo.require("dijit.Menu");
+		dojo.require("dijit._Calendar");
+		dojo.require("dijit.ColorPalette");
+		dojo.require("dijit.ProgressBar");
+		dojo.require("dijit.TitlePane");
+		dojo.require("dijit.Tooltip");
+		dojo.require("dijit.Tree");
+
+		// various Form elemetns
+		dojo.require("dijit.form.CheckBox");
+		dojo.require("dijit.form.Textarea");
+		dojo.require("dijit.form.FilteringSelect");
+		dojo.require("dijit.form.TextBox");
+		dojo.require("dijit.form.DateTextBox");	
+		dojo.require("dijit.form.TimeTextBox");	
+		dojo.require("dijit.form.Button");
+		dojo.require("dijit.InlineEditBox");
+		dojo.require("dijit.form.NumberSpinner");
+		dojo.require("dijit.form.Slider"); 
+
+		// layouts used in page
+		dojo.require("dijit.layout.AccordionContainer");
+		dojo.require("dijit.layout.ContentPane");
+		dojo.require("dijit.layout.TabContainer");
+		dojo.require("dijit.layout.BorderContainer");
+		dojo.require("dijit.Dialog");
+
+		// scan page for widgets and instantiate them
+		dojo.require("dojo.parser");	
+
+		// humm?		
+		dojo.require("dojo.date.locale");
+
+		// for the calendar
+		function myHandler(id,newValue){
+			console.debug("onChange for id = " + id + ", value: " + newValue);
+		}
+
+		dojo.addOnLoad(function() {
+
+			var start = new Date().getTime();
+			dojo.parser.parse(dojo.byId('container')); 
+			console.info("Total parse time: " + (new Date().getTime() - start) + "ms");
+
+			dojo.byId('loaderInner').innerHTML += " done.";
+			setTimeout(function hideLoader(){
+				var loader = dojo.byId('loader'); 
+				dojo.fadeOut({ node: loader, duration:500,
+					onEnd: function(){ 
+						loader.style.display = "none"; 
+					}
+				}).play();
+			}, 250);
+
+			var strayGlobals = [];
+			for(var i in window){
+				if(!window.__globalList[i]){ strayGlobals.push(i); }
+			}
+			if(strayGlobals.length){
+				console.warn("Stray globals: "+strayGlobals.join(", "));
+			}
+		});
+
+	</script>
+</body>
+{% endblock %}
