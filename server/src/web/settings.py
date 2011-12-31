@@ -2,6 +2,7 @@
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+TEMPLATE_STRING_IF_INVALID = "ERROR_IN_TEMPLATE"
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -93,6 +94,7 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'dojango.middleware.DojoCollector',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -106,7 +108,6 @@ DOJANGO_BASE_DOJO_ROOT="/lib/dojo"
 
 TEMPLATE_DIRS = (
     "/home/peter/work/share/dri-templates",
-    "/home/peter/work/share/dri-templates/frontend",
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -114,7 +115,7 @@ TEMPLATE_DIRS = (
 
 INSTALLED_APPS = (
     'dojango',
-    'frontend',
+    'dri_server.web.frontend',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

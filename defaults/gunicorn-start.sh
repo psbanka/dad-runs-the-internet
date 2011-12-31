@@ -19,4 +19,4 @@ test -d $LOGDIR || mkdir -p $LOGDIR
 test -d $PIDDIR || mkdir -p $PIDDIR
 exec /home/peter/work/bin/gunicorn_django -w $NUM_WORKERS \
   --log-level=debug \
-  --log-file=$LOGFILE --pid=$PIDFILE
+  --log-file=$LOGFILE --pid=$PIDFILE -D

@@ -53,7 +53,8 @@
 <button dojoType="dijit.form.Button" onClick="textSmaller.play();">Text UnEmbiggen</button>
 <div id="animDiv" class="box">
 <p>
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean
+{% set_dojango_context %}
+{{ DOJANGO.IS_LOCAL_BUILD }} Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean
 semper sagittis velit. Cras in mi. Duis porta mauris ut ligula.
 Proin porta rutrum lacus. Etiam consequat scelerisque quam. Nulla
 facilisi. Maecenas luctus venenatis nulla. In sit amet dui non mi

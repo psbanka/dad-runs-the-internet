@@ -18,6 +18,7 @@ VERSION_INFO = {
 DJANGO_PREAMBLE = 'DJANGO_SETTINGS_MODULE="dri_server.web.settings" '
 NOSE_CMD = '%s %s `which nosetests` --exe --with-id ' % (DJANGO_PREAMBLE, PYTHON_EXE)
 QUICKTEST_ADDENDUM = " -vv -s --stop"
+NGINX_CMD = 'nginx -c /home/peter/work/etc/nginx/nginx.conf -p /home/peter/work/ -g "env prefix=/tmp; env dri_root=/home/peter/work/; error_log loggy;"'
 
 ##################### EXCEPTIONS
 
@@ -60,11 +61,15 @@ def server_command(command, quiet = False):
         os.chdir("../defaults")
         os.system("./gunicorn-start.sh")
         os.chdir(cwd)
+        cmd = NGINX_CMD
+        os.system(cmd)
     else:
         pidfile = '/home/peter/work/var/run/gunicorn/dri_web.pid'
         pid = open(pidfile).read()
         os.system('kill %s' % pid)
         os.system('rm %s' % pidfile)
+        cmd = NGINX_CMD + " -s stop"
+        os.system(cmd)
 
 def task_version():
     "prepare to build"
@@ -83,6 +88,17 @@ def task_clean_build():
                         "_manifest_test",
                         "src/_version.py",
                        ]),
+           }
+
+def task_config_files():
+    "Configures nginx, etc."
+    return {
+            "actions": [
+                        "mkdir -p %s/etc/nginx",
+                        "mkdir -p %s/var/log/nginx",
+                        "cp ../defaults/nginx.conf %s/etc/nginx" % SYSTEM_ROOT,
+                        "cp ../defaults/dri.conf %s/etc/nginx" % SYSTEM_ROOT,
+                       ]
            }
 
 def task_build():
@@ -118,11 +134,18 @@ def task_stop():
     "Stop the test server"
     return {"actions": [(server_command, ["stop"]),]}
 
-def task_devstart():
+def task_start():
     "Start the test server"
     return {"actions": [(server_command, ["start"]),],
             "task_dep": ["install_everything:" + c for c in COMPONENTS] + \
-                        ["setup_fixtures"],
+                        ["setup_fixtures", "config_files"],
+            "verbosity": 2,
+           }
+
+def task_restart():
+    "Start the test server"
+    return {"actions": [],
+            "task_dep": ["stop", "start"],
             "verbosity": 2,
            }
 

@@ -6,8 +6,12 @@ COMPONENT_INFO = {
 ["share/dri-templates", [
     "share/dri-templates/404.html",
 ]],
+["share/dri-templates/css", [
+    "share/dri-templates/css/frontpage.css",
+]],
 ["share/dri-templates/frontend", [
     "share/dri-templates/frontend/my_first_page.html",
+    "share/dri-templates/frontend/index.html",
 ]],
 ],
 "install_requires": [ "PyYAML", "Pyro", "Django", "pysqlite", 'django-rest-framework', 'django-auth-ldap'],

@@ -4,9 +4,12 @@ from django.conf.urls.defaults import patterns, include, url
 # from django.contrib import admin
 # admin.autodiscover()
 
+from dri_server.web.frontend import views
+
 urlpatterns = patterns('',
     (r'^dojango/', include('dojango.urls')),
-    (r'^my-first-page/$', 'frontend.views.first_page'),
+    (r'^$', views.index),
+    (r'^my-first-page/$', views.first_page),
     # Examples:
     # url(r'^$', 'dri_web.views.home', name='home'),
     # url(r'^dri_web/', include('dri_web.foo.urls')),
