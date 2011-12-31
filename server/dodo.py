@@ -1,13 +1,13 @@
 import os
 from commands import getstatusoutput as gso
 import sys
+import glob
 
 OK = 0
 SYSTEM_ROOT = os.environ.get("VIRTUAL_ENV", '/')
-HTTPD_PATH = os.path.join(SYSTEM_ROOT, 'etc', 'httpd')
+HTTPD_PATH = os.path.join(SYSTEM_ROOT, 'etc', 'apache2')
 COMPONENTS = ['server']
 VAR_RUN = os.path.join(SYSTEM_ROOT, "var", "run")
-HTTPD_PATH = os.path.join(SYSTEM_ROOT, 'etc', 'httpd')
 DEWIT = "python $(which doit)"
 PYTHON_EXE = sys.executable
 VERSION_TEMPLATE = """\
@@ -50,52 +50,38 @@ def _make_link(source, dest):
     if not os.path.islink(dest):
         os.system('ln -s %s %s' % (source, dest))
 
-def configure_apache():
-    os.system('mkdir -p %s/conf' % HTTPD_PATH)
-    os.system('mkdir -p %s/conf.d' % HTTPD_PATH)
-    os.system('mkdir -p %s/var/log/httpd' % SYSTEM_ROOT)
-    os.system('mkdir -p %s/var/run/httpd' % SYSTEM_ROOT)
-    _make_link("%s/var/log/httpd" % SYSTEM_ROOT,  "%s/logs" % HTTPD_PATH)
-    _make_link("%s/var/run/httpd" % SYSTEM_ROOT,  "%s/run" % HTTPD_PATH)
-    _make_link("/usr/lib64/httpd/modules", "%s/modules" % (HTTPD_PATH))
-    #os.system('cp ../defaults/httpd.conf %s/conf' % HTTPD_PATH)
-    os.system('cp ../dri.conf %s/conf.d/dri.conf' % HTTPD_PATH)
-    os.environ["DRI_ROOT"] = SYSTEM_ROOT
-    os.system('export DRI_ROOT="%s"' % SYSTEM_ROOT)
-
 def server_command(command, quiet = False):
-    cmd = "echo 'running daemon...'"
-    if quiet:
-        cmd += "> /dev/null"
-    os.system(cmd)
-    os.system("httpd -d %s -k %s" % (HTTPD_PATH, command))
+    if command == "start":
+        cmd = "echo 'running daemon...'"
+        if quiet:
+            cmd += "> /dev/null"
+        cwd = os.getcwd()
+        os.system(cmd)
+        os.chdir("../defaults")
+        os.system("./gunicorn-start.sh")
+        os.chdir(cwd)
+    else:
+        pidfile = '/home/peter/work/var/run/gunicorn/dri_web.pid'
+        pid = open(pidfile).read()
+        os.system('kill %s' % pid)
+        os.system('rm %s' % pidfile)
 
 def task_version():
     "prepare to build"
     return {"actions": [
-                        #(get_file, ["_project_info.py"]),
-                        #(get_file, ["setup.py"]),
-                        #"cp _project_info.py src",
                         (get_version,),
                        ],
            }
 
 def task_clean_build():
     "Clean out old builds"
-    def rmrf(filename):
-        return "rm -rf %s" % filename
-
     return {"actions": map(rmrf, [
                         "build",
                         "dist",
                         "MANIFEST",
                         "MANIFEST.in",
                         "_manifest_test",
-                        #"_project_info.py",
-                        #"setup.py",
-                        #"src/_project_info.py",
                         "src/_version.py",
-                        #"testdb",
                        ]),
            }
 
@@ -113,25 +99,9 @@ def assure_virtual():
         return True
     return False
 
-def task_set_config_data():
-    "Sets up configuration data"
-    return {
-            #"targets": ["/var/deploy/rest_api"],
-            "actions": [(configure_apache,)],
-            "task_dep": ["cleanup"],
-           }
-
 def task_setup_fixtures():
     "Does nothing at the moment"
     return {"actions": []}
-
-def task_devstart():
-    "Start the test server"
-    return {"actions": [(server_command, ["start"]),],
-            "task_dep": ["install_everything:" + c for c in COMPONENTS] + \
-                        ["set_config_data", "setup_fixtures"],
-            "verbosity": 2,
-           }
 
 def task_install_everything():
     "Deploy all the components and test"
@@ -144,14 +114,16 @@ def task_install_everything():
                            ],
               }
 
-def task_cleanup():
-    "Clean out old builds"
-    def rmrf(filename):
-        return "rm -rf %s" % filename
+def task_stop():
+    "Stop the test server"
+    return {"actions": [(server_command, ["stop"]),]}
 
-    return {"actions": [(server_command, ['stop'], {"quiet":"true"}),
-                        'rm -rf %s/*.pid' % VAR_RUN,
-                       ],
+def task_devstart():
+    "Start the test server"
+    return {"actions": [(server_command, ["start"]),],
+            "task_dep": ["install_everything:" + c for c in COMPONENTS] + \
+                        ["setup_fixtures"],
+            "verbosity": 2,
            }
 
 def task_install():
@@ -179,7 +151,7 @@ def task_quicktest():
                         'default': '',
                        }],
             "verbosity": 2,
-            "task_dep": ["install", "set_config_data"],
+            "task_dep": ["install"],
            }
 
 

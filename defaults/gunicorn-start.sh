@@ -5,8 +5,8 @@ PIDFILE=$DRI_ROOT/var/run/gunicorn/dri_web.pid
 echo "logging to: " $LOGFILE
 LOGDIR=$(dirname $LOGFILE)
 PIDDIR=$(dirname $PIDFILE)
-kill $(cat $PIDFILE) >/dev/null || echo 'no killing'
-echo "---------------"
+#kill $(cat $PIDFILE 2>/dev/null) 2>/dev/null || echo 'no killing'
+#echo "---------------"
 NUM_WORKERS=1
 # user/group to run as
 USER=peter
@@ -17,6 +17,6 @@ cd /home/peter/work/dri
 
 test -d $LOGDIR || mkdir -p $LOGDIR
 test -d $PIDDIR || mkdir -p $PIDDIR
-exec ../bin/gunicorn_django -w $NUM_WORKERS \
+exec /home/peter/work/bin/gunicorn_django -w $NUM_WORKERS \
   --log-level=debug \
-  --log-file=$LOGFILE -D --pid=$PIDFILE
+  --log-file=$LOGFILE --pid=$PIDFILE

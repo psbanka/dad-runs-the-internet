@@ -1,2 +1,4 @@
 *.pyc
 .doit.db
+MANIFEST.in
+build

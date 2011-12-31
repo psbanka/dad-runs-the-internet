@@ -6,8 +6,8 @@ COMPONENT_INFO = {
 ["share/dri-templates", [
     "share/dri-templates/404.html",
 ]],
-["share/dri-templates/html_files", [
-    "share/dri-templates/html_files/base.html",
+["share/dri-templates/frontend", [
+    "share/dri-templates/frontend/my_first_page.html",
 ]],
 ],
 "install_requires": [ "PyYAML", "Pyro", "Django", "pysqlite", 'django-rest-framework', 'django-auth-ldap'],
@@ -22,13 +22,14 @@ COMPONENT_INFO = {
 ],
 "vendor_requires": ['pyro', 'django', 'django-auth-ldap', 'django-rest-framework'],
 "description": 'DRI web server',
-"name": "dri_web",
-"package_data": { "dri_web": [ "share/dri-templates/*.html",]
+"name": "dri_server",
+"package_data": { "dri_server": [ "share/dri-templates/*.html",]
                 },
-"package_dir": { "dri_web": "src" },
+"package_dir": { "dri_server": "src" },
 "packages": [
-             "dri_web",
-             "dri_web.web",
+             "dri_server",
+             "dri_server.web",
+             "dri_server.web.frontend",
             ],
-"provides": ["dri_web"]
+"provides": ["dri_server"]
 }

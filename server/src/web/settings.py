@@ -100,9 +100,13 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
-ROOT_URLCONF = 'dri_web.urls'
+ROOT_URLCONF = 'dri_server.web.urls'
+DOJANGO_BASE_MEDIA_ROOT="/lib"
+DOJANGO_BASE_DOJO_ROOT="/lib/dojo"
 
 TEMPLATE_DIRS = (
+    "/home/peter/work/share/dri-templates",
+    "/home/peter/work/share/dri-templates/frontend",
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -110,6 +114,7 @@ TEMPLATE_DIRS = (
 
 INSTALLED_APPS = (
     'dojango',
+    'frontend',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

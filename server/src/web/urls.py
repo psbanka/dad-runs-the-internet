@@ -6,6 +6,7 @@ from django.conf.urls.defaults import patterns, include, url
 
 urlpatterns = patterns('',
     (r'^dojango/', include('dojango.urls')),
+    (r'^my-first-page/$', 'frontend.views.first_page'),
     # Examples:
     # url(r'^$', 'dri_web.views.home', name='home'),
     # url(r'^dri_web/', include('dri_web.foo.urls')),

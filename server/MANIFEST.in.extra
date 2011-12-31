@@ -1,5 +1,5 @@
 include share/tnt-templates/registration/*
-include share/tnt-templates/html_files/*
+include share/tnt-templates/frontend/*
 include share/tnt-templates/static_files/images/*
 include share/tnt-templates/static_files/js/*
 include share/tnt-templates/static_files/css/*
