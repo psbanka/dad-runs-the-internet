@@ -9,8 +9,11 @@ COMPONENT_INFO = {
 ["share/dri-templates/css", [
     "share/dri-templates/css/frontpage.css",
 ]],
+["share/dri-templates/js", [
+    "share/dri-templates/js/frontpage.js",
+]],
 ["share/dri-templates/frontend", [
-    "share/dri-templates/frontend/my_first_page.html",
+    "share/dri-templates/frontend/known_devices.html",
     "share/dri-templates/frontend/index.html",
 ]],
 ],

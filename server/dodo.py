@@ -65,11 +65,14 @@ def server_command(command, quiet = False):
         os.system(cmd)
     else:
         pidfile = '/home/peter/work/var/run/gunicorn/dri_web.pid'
-        pid = open(pidfile).read()
-        os.system('kill %s' % pid)
-        os.system('rm %s' % pidfile)
-        cmd = NGINX_CMD + " -s stop"
-        os.system(cmd)
+        try:
+            pid = open(pidfile).read()
+            os.system('kill %s' % pid)
+            os.system('rm %s' % pidfile)
+            cmd = NGINX_CMD + " -s stop"
+            os.system(cmd)
+        except IOError:
+            print "Nothing to kill..."
 
 def task_version():
     "prepare to build"

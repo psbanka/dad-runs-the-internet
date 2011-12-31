@@ -9,7 +9,7 @@ from dri_server.web.frontend import views
 urlpatterns = patterns('',
     (r'^dojango/', include('dojango.urls')),
     (r'^$', views.index),
-    (r'^my-first-page/$', views.first_page),
+    (r'^known_devices/$', views.known_devices),
     # Examples:
     # url(r'^$', 'dri_web.views.home', name='home'),
     # url(r'^dri_web/', include('dri_web.foo.urls')),
