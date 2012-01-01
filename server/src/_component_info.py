@@ -15,6 +15,7 @@ COMPONENT_INFO = {
 ["share/dri-templates/frontend", [
     "share/dri-templates/frontend/index.html",
     "share/dri-templates/frontend/edit_device_form.html",
+    "share/dri-templates/frontend/arp_upload_form.html",
 ]],
 ],
 "install_requires": [ "PyYAML", "Pyro", "Django", "pysqlite", 'django-rest-framework', 'django-auth-ldap'],

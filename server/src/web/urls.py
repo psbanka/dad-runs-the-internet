@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import patterns, include, url
+from django.conf import settings
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -11,9 +12,9 @@ urlpatterns = patterns('',
     (r'^$', views.index),
     (r'^known_devices/$', views.known_devices),
     (r'^edit_device/(?P<device_name>.*)$', views.edit_device),
-    # Examples:
-    # url(r'^$', 'dri_web.views.home', name='home'),
-    # url(r'^dri_web/', include('dri_web.foo.urls')),
+    (r'^arp_upload/$', views.arp_upload),
+    (r'^arp_upload/(?P<filename>.*)$', views.arp_upload),
+    (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
