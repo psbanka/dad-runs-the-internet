@@ -11,6 +11,7 @@ URL = "http://192.168.11.114:8080/iptables_download/"
 IPTABLES_TARGET = "grp_1"
 
 def pull_json_configs(options):
+    "Go grab data from the server"
     cmd = "curl %s 2>/dev/null" % URL
     curl_output = run_or_die(cmd)
     
@@ -28,7 +29,16 @@ def pull_json_configs(options):
         sys.exit(1)
     return configs
 
+def verify_ip(mac_address, ip_address, options):
+    """
+    We have been given IP-address and MAC address combinations.
+    We should probably verify that these things are what we think
+    they are.
+    """
+    pass # TODO
+
 def make_rules(configs, options):
+    "Generate iptables rules to run on the system"
     cmds = ['iptables -F %s' % IPTABLES_TARGET]
 
     for allowed_record in configs['allowed']:
@@ -45,17 +55,20 @@ def make_rules(configs, options):
     return cmds
 
 def implement_rules(cmds, options):
+    "Actually run the rules that we put together"
     if options.test:
         print "This script would implement the following rules:"
         for cmd in cmds:
             print "   %s" % cmd
     else:
         for cmd in cmds:
+            if options.verbose: print "Running: [%s]..." % cmd,
             status, output = gso(cmd)
             if status != OK:
-                print "COMMAND FAILED: [%s]" % cmd
+                print "\nCOMMAND FAILED: [%s]" % cmd
                 print ">> OUTPUT: (%s)" % output
                 sys.exit(1)
+            if options.verbose: print "SUCCESS"
 
 def main():
     parser = optparse.OptionParser("usage: %prog")
