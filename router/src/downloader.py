@@ -43,7 +43,10 @@ class Downloader:
 
     def run(self):
         "Perform all necessary actions"
-        configs = self.pull_json_configs()
+        try:
+            configs = self.pull_json_configs()
+        except ValueError:
+            raise DownloadException(URL, "Can't parse data from server")
         cmds = make_rules(configs)
         self.implement_rules(cmds)
 
@@ -58,12 +61,12 @@ class Downloader:
                 line = line[:-2]
             configs.update(json.loads(line))
 
-        if not configs['success']:
+        if not configs.get('success', False):
             syslog.syslog("Error loading configs")
             if self.verbose:
                 print "Output from the server:"
-                pprint(output)
-            raise DownloadException(URL, output)
+                pprint(curl_output)
+            raise DownloadException(URL, curl_output)
         return configs
 
     def implement_rules(self, cmds):

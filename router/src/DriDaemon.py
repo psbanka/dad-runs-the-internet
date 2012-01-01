@@ -4,7 +4,7 @@ import sys
 from downloader import Downloader
 from uploader import upload_arp_table
 
-from Exceptions import DownloadException, UploadException
+from Exceptions import DownloadException, UploadException, CommandException
 
 MAX_LOOPS = 0
 
@@ -26,11 +26,11 @@ class DriDaemon:
                     sys.exit(0)
             try:
                 self.downloader.run()
-            except DownloadException:
+            except (DownloadException, CommandException):
                 syslog.syslog('Help! Downloading')
             try:
                 upload_arp_table()
-            except UploadException:
+            except (UploadException, CommandException):
                 syslog.syslog('Help! Uploading')
             syslog.syslog(syslog.LOG_INFO, "I LIVE")
             #print "I LIVE"

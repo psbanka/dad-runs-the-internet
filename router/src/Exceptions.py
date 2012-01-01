@@ -21,3 +21,10 @@ class UploadException(DriException):
         self.output = output
     def __repr__(self):
         return "UploadException"
+
+class CommandException(DriException):
+    def __init__(self, cmd, output):
+        self.cmd = cmd
+        self.output = output
+    def __repr__(self):
+        return "CommandException"
