@@ -1,3 +1,10 @@
 from django.db import models
 
-# Create your models here.
+class Policy(models.Model):
+    name = models.CharField(max_length = 17)
+
+class Device(models.Model):
+    mac_address = models.CharField(max_length = 17)
+    name = models.CharField(max_length = 50)
+    policy = models.ForeignKey(Policy)
+

@@ -22,7 +22,7 @@ function frontpage(username) {
                     };
                     var manage_button = dojo.create("button", button_spec, list_item);
                     var handle = dojo.connect(dojo.byId(button_name), "onclick", function(evt) {
-                        show_device(evt.target.name);
+                        edit_device(evt.target.name);
                     });
                 }
             }
@@ -44,45 +44,30 @@ function frontpage(username) {
     dojo.connect(dojo.byId("biggy"), "onclick", function(evt) {
         alert('clicked' + dojo.version);
     });
-    */
     dojo.parser.parse(dojo.byId('known_devices'));
+    */
 }
 
-function show_device(device_name) {
-    var tab_container = dijit.byId("topTabs");
-    var tab_name = device_name+"_tab"
-    var tab_spec = {id: tab_name,
-                    closable: "true",
-                    title: device_name,
-                    style: "padding:10px;"
-    }
-    var device_tab = new dijit.layout.ContentPane(tab_spec);
-    tab_container.addChild(device_tab);
-    tab_container.selectChild(device_tab);
-    var dom_node = dojo.byId(tab_name);
-    dom_node.innerHTML = "<h1>" + device_name + "</h1>";
+function edit_device(device_name) {
+    var xhrArgs = {
+        url: '/edit_device/' + device_name,
+        handleAs: "text",
+        load: function(response, ioArgs) {
+            var tab_container = dijit.byId("topTabs");
+            var tab_name = device_name+"_tab"
+            var tab_spec = {id: tab_name,
+                            closable: "true",
+                            title: device_name,
+                            style: "padding:10px;"
+            }
+            var device_tab = new dijit.layout.ContentPane(tab_spec);
+            tab_container.addChild(device_tab);
+            tab_container.selectChild(device_tab);
+            var dom_node = dojo.byId(tab_name);
+            dom_node.innerHTML = response;
 
-    var form_spec = {dojoType: 'dijit.form.Form',
-                     id: device_name + "_form",
-                     onsubmit: "device_submit()",
-                     action: "/submit_device",
-    }
-    var device_form = dojo.create("span", form_spec, dom_node);
-    var ul = dojo.create("ul", {style: "display:inline"}, device_form);
-    var li_1 = dojo.create("li", {}, ul);
-    dojo.create("label", {innerHTML: "Name of device"}, li_1);
-    var input_field_spec = {dojotype: "dijit.form.ValidationTextBox",
-                            id: device_name + "_name_field",
-                            type: "text",
-                            promptMessage: "Jeremy's Ipod",
-                            regexp:"[\\w|\\d\.|\\-|_]+",
-                            required: "true"};
-    var input_field = dojo.create("input", input_field_spec, li_1);
-    var li_2 = dojo.create("li", {}, ul);
-    var button_spec = {id: device_name + "_submit",
-                       dojotype: "dijit.form.Button",
-                       iconclass: "check16",
-                       innerHTML: "Submit"};
-    var next = dojo.create("button", button_spec, li_2);
-    dojo.parser.parse(dom_node);
+            dojo.parser.parse(dom_node);
+        }
+    };
+    var deferred = dojo.xhrGet(xhrArgs);
 }

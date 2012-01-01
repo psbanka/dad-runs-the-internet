@@ -1,3 +1,3 @@
 VERSION_INFO = {
-    "Revision": "566253d",
+    "Revision": "967d345",
 }

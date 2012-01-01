@@ -93,12 +93,20 @@ def task_clean_build():
                        ]),
            }
 
+def task_syncdb():
+    return {
+        "actions": ["%s python src/web/manage.py syncdb" % DJANGO_PREAMBLE,],
+        "task_dep": ['config_files'],
+        "verbosity": 2,
+    }
+
 def task_config_files():
     "Configures nginx, etc."
     return {
             "actions": [
-                        "mkdir -p %s/etc/nginx",
-                        "mkdir -p %s/var/log/nginx",
+                        "mkdir -p %s/etc/nginx" % SYSTEM_ROOT,
+                        "mkdir -p %s/var/log/nginx" % SYSTEM_ROOT,
+                        "mkdir -p %s/var/lib/dri" % SYSTEM_ROOT,
                         "cp ../defaults/nginx.conf %s/etc/nginx" % SYSTEM_ROOT,
                         "cp ../defaults/dri.conf %s/etc/nginx" % SYSTEM_ROOT,
                        ]

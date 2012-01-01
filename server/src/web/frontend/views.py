@@ -1,7 +1,8 @@
-# Create your views here.
 from django.shortcuts import render_to_response
-from django.template import loader, Context, RequestContext
+from django.template import RequestContext
 from dojango.decorators import json_response
+from forms import DeviceForm
+from django.core.context_processors import csrf
 
 def index(request):
     return render_to_response("frontend/index.html", context_instance=RequestContext(request))
@@ -18,6 +19,12 @@ def known_devices(request):
                 ]
               }
     return {"devices": devices}
-    model = {"joe": "joe is cool", "devices": devices}
-    return render_to_response("frontend/known_devices.html", model)
 
+def edit_device(request, device_name):
+    if request.method == 'POST':
+        form = DeviceForm(request.POST)
+    else:
+        form = DeviceForm(initial={"device_name": "Jeremy's iPod"})
+    model = {"form": form, "device_name": device_name}
+    model.update(csrf(request))
+    return render_to_response("frontend/edit_device_form.html", model)

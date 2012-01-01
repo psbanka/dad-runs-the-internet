@@ -1,0 +1,11 @@
+{% extends "dojango/base.html" %}
+{% block dojango_content %}
+    <h1>{{ device_name }}</h1>
+    <form action="." method="POST">
+        <table>
+            {{ form.as_table }}
+        </table>
+        <p><input type="submit" value="Submit"></p>
+        {% csrf_token %}
+    </form>
+{% endblock %}

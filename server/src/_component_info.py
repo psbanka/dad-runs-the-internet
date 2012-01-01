@@ -13,8 +13,8 @@ COMPONENT_INFO = {
     "share/dri-templates/js/frontpage.js",
 ]],
 ["share/dri-templates/frontend", [
-    "share/dri-templates/frontend/known_devices.html",
     "share/dri-templates/frontend/index.html",
+    "share/dri-templates/frontend/edit_device_form.html",
 ]],
 ],
 "install_requires": [ "PyYAML", "Pyro", "Django", "pysqlite", 'django-rest-framework', 'django-auth-ldap'],
