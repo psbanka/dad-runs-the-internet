@@ -40,13 +40,14 @@ def upload(filename):
     return upload_file(csrf, filename)
 
 def upload_arp_table():
-    output = _run_or_die('arp -an')
+    arp_data = _run_or_die('arp -an')
     fh, file_name = tempfile.mkstemp(prefix="arp_")
-    open(file_name, 'w').write(output)
-    if upload(file_name) == OK:
+    open(file_name, 'w').write(arp_data)
+    output = upload(file_name)
+    if output == OK:
         gso('rm -f %s' % file_name)
         return OK
-    return FAIL
+    return output
 
 if __name__ == "__main__":
     #print "(%s)" % upload(TEST_FILE)
