@@ -8,6 +8,9 @@ import traceback
 from util import OK, FAIL
 import time
 import resource
+from downloader import Downloader
+from uploader import upload_arp_table
+import syslog
 
 DEFAULT_PID_DIR = "/opt/var/run"
 PID_FILE = "dri_router.pid"
@@ -44,14 +47,21 @@ class Daemon:
     def __init__(self):
         self.kill_switch = False
         self.loops = 0
+        self.downloader = Downloader()
 
     def main_loop(self):
+        syslog.syslog('Starting dri...')
+        #syslog.syslog(syslog.LOG_ERR, 'Processing started')
+
         while not self.kill_switch:
             time.sleep(1)
             self.loops += 1
             if self.loops > MAX_LOOPS:
                 sys.exit(0)
-            print "I LIVE"
+            self.downloader.run()
+            upload_arp_table() 
+            syslog.syslog(syslog.LOG_INFO, "I LIVE")
+            #print "I LIVE"
 
     def terminate(self):
         self.kill_switch = True
