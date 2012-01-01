@@ -96,7 +96,7 @@ def task_clean_build():
 def task_syncdb():
     return {
         "actions": ["%s python src/web/manage.py syncdb" % DJANGO_PREAMBLE,],
-        "task_dep": ['config_files'],
+        "task_dep": ['config_files', 'install_everything'],
         "verbosity": 2,
     }
 
