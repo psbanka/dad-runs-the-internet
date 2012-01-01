@@ -17,18 +17,22 @@
   pk: 1
   fields:
     mac_address: "58:94:6b:a4:da:bc"
+    ip_address: "192.168.10.2"
 - model: frontend.device
   pk: 2
   fields:
     mac_address: "48:5b:39:f8:5d:f9"
+    ip_address: "192.168.10.3"
 - model: frontend.device
   pk: 3
   fields:
     mac_address: "58:94:6b:a4:d7:bc"
+    ip_address: "192.168.10.4"
 - model: frontend.device
   pk: 4
   fields:
     mac_address: "48:57:39:78:5d:f9"
+    ip_address: "192.168.10.5"
 - model: frontend.devicetype
   pk: 1
   fields:

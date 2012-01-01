@@ -12,8 +12,10 @@ urlpatterns = patterns('',
     (r'^$', views.index),
     (r'^known_devices/$', views.known_devices),
     (r'^edit_device/(?P<device_name>.*)$', views.edit_device),
+    (r'^enable_device/$', views.enable_device),
     (r'^arp_upload/$', views.arp_upload),
     (r'^arp_upload/(?P<filename>.*)$', views.arp_upload),
+    (r'^iptables_download/$', views.iptables_download),
     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
 
     # Uncomment the admin/doc line below to enable admin documentation:

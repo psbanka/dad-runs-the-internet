@@ -4,7 +4,7 @@ from dojango.decorators import json_response
 from forms import DeviceForm, ArpUploadForm
 from models import ArpDocument
 from django.core.context_processors import csrf
-from models import DeviceType, Device, Policy
+from models import DeviceType, Device, Policy, TemporaryApproval
 from django.http import HttpResponse
 import logging
 import pprint
@@ -33,7 +33,7 @@ def log_object(object, title='', max_lines=0):
     if title:
         logger.info(title.upper().ljust(50,'='))
 
-def upload_process(arp_data):
+def _upload_process(arp_data):
     """
     Update the database based on ARP entries
     """
@@ -42,11 +42,14 @@ def upload_process(arp_data):
     for line in arp_data.split('\n'):
         match_sets = matcher.findall(line)
         if not match_sets:
-            logger.error(">>> NO MATCH (%s) " % line)
+            logger.error(">>> UPLOAD: ignoring line (%s) " % line)
             continue
         for match_set in match_sets:
-            logger.info( ">>> MATCH %s" % str(match_set))
+            #logger.info( ">>> UPLOAD: processing data: %s" % str(match_set))
             ip_address, mac_address = match_set
+            if ip_address == "<incomplete>":
+                logger.info( ">>> UPLOAD: Ignoring incomplete-data for: %s" % mac_address)
+                continue
             records = Device.objects.filter(mac_address = mac_address)
             if len(records) == 0:
                 device = Device()
@@ -62,17 +65,17 @@ def arp_upload(request, filename = None):
     """
     Routers are uploading their ARP tables, accept and process it.
     """
-    logger = logging.getLogger('dri.custom')
+    #logger = logging.getLogger('dri.custom')
     if request.method == 'POST':
         form = ArpUploadForm(request.POST, request.FILES)
         if form.is_valid():
             output = StringIO.StringIO()
             for chunk_name, file_chunk in request.FILES.iteritems():
-                logger.info("CHUNK: %s" % chunk_name)
+                #logger.info("CHUNK: %s" % chunk_name)
                 output.write( file_chunk.read() )
 
             output.seek(0)
-            upload_process(output.read())
+            _upload_process(output.read())
             return HttpResponse("cool.")
     else:
         form = ArpUploadForm() # A empty, unbound form
@@ -85,6 +88,19 @@ def arp_upload(request, filename = None):
     return render_to_response("frontend/arp_upload_form.html", model,
         context_instance=RequestContext(request))
 
+@json_response
+def iptables_download(request):
+    """
+    A router wants to know what to do with itself
+    """
+    response = {"allowed": [],
+                "blocked": []
+               }
+    for device in Device.objects.all():
+        section_name = "allowed" if device.is_allowed() else "blocked"
+        new_entry = {"mac_address": device.mac_address, "ip_address": device.ip_address}
+        response[section_name].append(new_entry)
+    return response
 
 @json_response
 def known_devices(request):
@@ -105,6 +121,51 @@ def known_devices(request):
         except KeyError:
             output[device_description] = [device_name]
     return {"devices": output}
+
+def _get_device_from_name_or_mac(device_name):
+    try:
+        device = Device.objects.get(mac_address=device_name)
+    except Exception: # FIXME catch DoesNotExist
+        device = Device.objects.get(name=device_name)
+    return device
+
+@json_response
+def enable_device(request):
+    """
+    The user wants to temporarily enable a device
+    """
+    logger = logging.getLogger('dri.custom')
+    output = {"success": True,
+              "message": ""}
+    if request.method != 'POST':
+        output['success'] = False
+        output["message"] = "Must use a POST"
+        return output
+    device_name = request.POST.get("device_name")
+    provided_duration = request.POST.get("duration", "30")
+    try:
+        duration = int(provided_duration)
+        device = None
+        try:
+            device = _get_device_from_name_or_mac(device_name)
+        except Exception: # FIXME catch DoesNotExist
+            return HttpResponse("can't look that record up: (%s)" % device_name)
+        temporary_approval = TemporaryApproval()
+        temporary_approval.device = device
+        temporary_approval.set_parameters(duration)
+        temporary_approval.save()
+        output['message'] = "Saved"
+    except ValueError:
+        msg = "Bad duration provided: (%s)" % provided_duration
+        logger.info(msg)
+        output["success"] = False
+        output['message'] = msg
+    except Exception: # FIXME (does not exist)
+        msg = "Bad device name provided: (%s)" % request.POST.get("device_name")
+        logger.info(msg)
+        output["success"] = False
+        output['message'] = msg
+    return output
 
 def edit_device(request, device_name):
     """
@@ -144,18 +205,17 @@ def edit_device(request, device_name):
             return HttpResponse("<h1>SAVED</h1>")
     else:
         try:
-            device = Device.objects.get(mac_address=device_name)
+            device = _get_device_from_name_or_mac(device_name)
+            policy = None if not device.policy else device.policy.name
+            device_type = None if not device.device_type else device.device_type.name
+            form = DeviceForm(initial={"device_name": device.name,
+                                       "mac_address": device.mac_address,
+                                       "device_type": device_type,
+                                       "device_allowed": str(device.is_allowed()),
+                                       "policy"     : policy})
         except Exception: # FIXME catch DoesNotExist
-            try:
-                device = Device.objects.get(name=device_name)
-            except Exception: # FIXME catch DoesNotExist
-                return HttpResponse("can't look that record up: (%s)" % device_name)
-        policy = None if not device.policy else device.policy.name
-        device_type = None if not device.device_type else device.device_type.name
-        form = DeviceForm(initial={"device_name": device.name,
-                                   "mac_address": device.mac_address,
-                                   "device_type": device_type,
-                                   "policy"     : policy})
+            return HttpResponse("can't look that record up: (%s)" % device_name)
+
     model = {"form": form, "device_name": device_name}
     model.update(csrf(request))
     return render_to_response("frontend/edit_device_form.html", model)

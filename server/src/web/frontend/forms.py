@@ -39,6 +39,10 @@ class DeviceForm(forms.Form):
         required=False,
         widget=forms.Select)
 
+    device_allowed = forms.CharField(
+        required=False, 
+        widget=forms.TextInput())
+
 class ArpUploadForm(forms.Form):
 
     docfile = forms.FileField(

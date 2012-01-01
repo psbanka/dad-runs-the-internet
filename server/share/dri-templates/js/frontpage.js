@@ -83,19 +83,28 @@ function edit_device_start(device_name) {
             var dom_node = dojo.byId(tab_name);
             dom_node.innerHTML = response;
 
-            var button_name = device_name + "_apply";
-            var button_spec = { id: button_name,
-                                name: device_name,
-                                hidebackground: "true", 
-                                //dojotype: "dijit.form.Button",
-                                innerHTML: "Apply"
+            var apply_button_name = device_name + "_apply";
+            var apply_button_spec = { id: apply_button_name,
+                                      name: device_name,
+                                      hidebackground: "true", 
+                                      //dojotype: "dijit.form.Button",
+                                      innerHTML: "Apply"
+            };
+
+            var enable_button_name = device_name + "_enable";
+            var enable_button_spec = { id: enable_button_name,
+                                       name: device_name,
+                                       hidebackground: "true", 
+                                       //dojotype: "dijit.form.Button",
+                                       innerHTML: "Enable for 30 min"
             };
 
             dojo.parser.parse(dom_node);
 
-            dojo.create("button", button_spec, dom_node);
+            dojo.create("button", apply_button_spec, dom_node);
+            dojo.create("button", enable_button_spec, dom_node);
 
-            var handle = dojo.connect(dojo.byId(button_name), "onclick", function(evt) {
+            var handle = dojo.connect(dojo.byId(apply_button_name), "onclick", function(evt) {
                 var device_name = evt.target.name;
                 var form= dijit.byId("form_" + device_name);
                 if(form.isValid()){
@@ -106,10 +115,34 @@ function edit_device_start(device_name) {
                 return true;
             });
 
+            var handle = dojo.connect(dojo.byId(enable_button_name), "onclick", function(evt) {
+                var device_name = evt.target.name;
+                var form= dijit.byId("form_" + device_name);
+                enable_device(device_name, form.domNode);
+            });
+
             dojo.parser.parse(dom_node);
         }
     };
     var deferred = dojo.xhrGet(xhrArgs);
+}
+
+function enable_device(device_name, my_form) {
+    var url = "/enable_device/";
+    var xhrArgs = {
+        url: url,
+        handleAs:"json",
+        content:{device_name: device_name,
+                 duration: 30,
+                 csrfmiddlewaretoken: my_form.csrfmiddlewaretoken.value
+        },
+        load: function(data) {
+            var device_tab = dojo.byId(sanitize_name(device_name)+"_tab");
+            device_tab.innerHTML += data;
+            frontpage("joe blow")
+        }
+    }
+    var deferred = dojo.xhrPost(xhrArgs);
 }
 
 function edit_device_finish(device_name, my_form) {

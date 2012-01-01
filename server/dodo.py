@@ -97,7 +97,8 @@ def task_syncdb():
     return {
         "actions": [
                     "rm -f %s/var/lib/dri/web_models.db" % SYSTEM_ROOT, 
-                    "%s python src/web/manage.py syncdb" % DJANGO_PREAMBLE,
+                    "%s python src/web/manage.py syncdb --noinput" % DJANGO_PREAMBLE,
+                    "cp -f %s/var/lib/dri/web_models.db ../defaults/web_models.db" % SYSTEM_ROOT, 
                    ],
         "task_dep": ['config_files', 'install_everything'],
         "verbosity": 2,
@@ -110,6 +111,7 @@ def task_config_files():
                         "mkdir -p %s/etc/nginx" % SYSTEM_ROOT,
                         "mkdir -p %s/var/log/nginx" % SYSTEM_ROOT,
                         "mkdir -p %s/var/lib/dri/media" % SYSTEM_ROOT,
+                        "cp ../defaults/web_models.db %s/var/lib/dri" % SYSTEM_ROOT,
                         "cp ../defaults/nginx.conf %s/etc/nginx" % SYSTEM_ROOT,
                         "cp ../defaults/dri.conf %s/etc/nginx" % SYSTEM_ROOT,
                        ]
@@ -188,7 +190,7 @@ def task_quicktest():
                         'default': '',
                        }],
             "verbosity": 2,
-            "task_dep": ["install"],
+            "task_dep": ["install", "config_files"],
            }
 
 
