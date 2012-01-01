@@ -39,3 +39,10 @@ class DeviceForm(forms.Form):
         required=False,
         widget=forms.Select)
 
+class ArpUploadForm(forms.Form):
+
+    docfile = forms.FileField(
+        label='Select a file',
+        help_text='max. 42 megabytes'
+    )
+
