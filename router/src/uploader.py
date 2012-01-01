@@ -2,9 +2,10 @@
 
 import re
 from commands import getstatusoutput as gso
-import sys
+import syslog
 import tempfile
 from util import run_or_die, OK, FAIL
+from Exceptions import UploadException
 
 TEST_FILE = '/etc/passwd'
 URL = "http://192.168.11.114:8080/arp_upload/"
@@ -14,9 +15,8 @@ def grab_csrf():
     output = run_or_die(cmd)
     matches = re.compile("name='csrfmiddlewaretoken' value='(\S+)'" ).findall(output)
     if not matches:
-        print "Could not detect csrf from server:"
-        #print output
-        sys.exit(1)
+        syslog.syslog(syslog.LOG_ERR, "Could not detect csrf from server")
+        raise UploadException(URL, output)
     return matches[0]
 
 def upload_file(csrf, filename):
@@ -39,7 +39,8 @@ def upload_arp_table():
     if output == OK:
         gso('rm -f %s' % file_name)
         return OK
-    return output
+    syslog.syslog(syslog.LOG_ERR, "Error uploading")
+    raise UploadException(URL, output)
 
 if __name__ == "__main__":
     #print "(%s)" % upload(TEST_FILE)

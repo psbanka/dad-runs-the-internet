@@ -5,17 +5,13 @@ import sys
 from signal import SIGTERM
 import os
 import traceback
-from util import OK, FAIL
-import time
 import resource
-from downloader import Downloader
-from uploader import upload_arp_table
-import syslog
+from dri_router.DriDaemon import DriDaemon
+from dri_router.util import OK, FAIL
 
 DEFAULT_PID_DIR = "/opt/var/run"
 PID_FILE = "dri_router.pid"
 DEBUG_TRACE = True
-MAX_LOOPS = 10
 MAXFD = 1024
 
 def trace_exit(value):
@@ -42,31 +38,6 @@ def stop_pid_file(file_name, service_name):
     os.system("rm -f %s" % file_name)
     return status
 
-class Daemon:
-
-    def __init__(self):
-        self.kill_switch = False
-        self.loops = 0
-        self.downloader = Downloader()
-
-    def main_loop(self):
-        syslog.syslog('Starting dri...')
-        #syslog.syslog(syslog.LOG_ERR, 'Processing started')
-
-        while not self.kill_switch:
-            time.sleep(1)
-            self.loops += 1
-            if self.loops > MAX_LOOPS:
-                sys.exit(0)
-            self.downloader.run()
-            upload_arp_table() 
-            syslog.syslog(syslog.LOG_INFO, "I LIVE")
-            #print "I LIVE"
-
-    def terminate(self):
-        self.kill_switch = True
-        print "dying"
-
 class Daemonizer:
     "Runs the dri service(s)"
 
@@ -77,7 +48,7 @@ class Daemonizer:
     def main_process_loop(self):
         "This runs the dispatcher process"
 
-        daemon = Daemon()
+        daemon = DriDaemon()
         pid = str(os.getpid())
         try:
             open(self.pid_file, 'w').write( "%s\n" % pid )

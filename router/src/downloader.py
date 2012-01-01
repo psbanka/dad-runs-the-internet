@@ -2,10 +2,11 @@
 
 from util import run_or_die, OK, FAIL
 from commands import getstatusoutput as gso
+from Exceptions import DownloadException
 import json
-import sys
 import optparse
 from pprint import pprint
+import syslog
 
 URL = "http://192.168.11.114:8080/iptables_download/"
 IPTABLES_TARGET = "grp_1"
@@ -58,11 +59,11 @@ class Downloader:
             configs.update(json.loads(line))
 
         if not configs['success']:
+            syslog.syslog("Error loading configs")
             if self.verbose:
-                print "Error loading configs"
                 print "Output from the server:"
                 pprint(output)
-            sys.exit(1)
+            raise DownloadException(URL, output)
         return configs
 
     def implement_rules(self, cmds):
@@ -73,12 +74,11 @@ class Downloader:
                 print "   %s" % cmd
         else:
             for cmd in cmds:
-                if self.verbose: print "Running: [%s]..." % cmd,
+                if self.verbose: syslog.syslog("Running: [%s]..." % cmd,)
                 status, output = gso(cmd)
                 if status != OK:
-                    print "\nCOMMAND FAILED: [%s]" % cmd
-                    print ">> OUTPUT: (%s)" % output
-                    sys.exit(1)
+                    syslog.syslog(syslog.LOG_ERR, "COMMAND FAILED: [%s]" % cmd)
+                    raise DownloadException(URL, output)
                 if self.verbose: print "SUCCESS"
 
 def main():
