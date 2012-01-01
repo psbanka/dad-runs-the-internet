@@ -20,6 +20,10 @@ SYSTEM_CHOICES = (
 
 class DeviceForm(forms.Form):
 
+    mac_address = forms.CharField(
+        required=True, 
+        widget=forms.HiddenInput())
+
     device_name = forms.CharField(
         required=True, 
         #help_text="Jeremy's iPod",  # Doesn't work at current -pbanka

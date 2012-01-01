@@ -1,3 +1,16 @@
+// We don't know what state we were in when we got called, so wipe
+// out extra cruft
+function cleanup(id) {
+    var dijit_obj = dijit.byId(id);
+    var dojo_obj = dojo.byId(id);
+    if (typeof dijit_obj != 'undefined') {
+        dijit_obj.destroyRecursive();
+    }
+    if (dojo_obj !== null) {
+        dojo.destroy(dojo_obj);
+    }
+}
+
 // Our basic home-page for the app
 function frontpage(username) {
     var xhrArgs = {
@@ -22,7 +35,7 @@ function frontpage(username) {
                     };
                     var manage_button = dojo.create("button", button_spec, list_item);
                     var handle = dojo.connect(dojo.byId(button_name), "onclick", function(evt) {
-                        edit_device(evt.target.name);
+                        edit_device_start(evt.target.name);
                     });
                 }
             }
@@ -48,13 +61,17 @@ function frontpage(username) {
     */
 }
 
-function edit_device(device_name) {
+function sanitize_name(device_name) {
+    return device_name.replace(' ', '').replace('"', '').replace("'", '')
+}
+
+function edit_device_start(device_name) {
     var xhrArgs = {
         url: '/edit_device/' + device_name,
         handleAs: "text",
         load: function(response, ioArgs) {
             var tab_container = dijit.byId("topTabs");
-            var tab_name = device_name+"_tab"
+            var tab_name = sanitize_name(device_name) + "_tab"
             var tab_spec = {id: tab_name,
                             closable: "true",
                             title: device_name,
@@ -66,8 +83,46 @@ function edit_device(device_name) {
             var dom_node = dojo.byId(tab_name);
             dom_node.innerHTML = response;
 
+            var button_name = device_name + "_apply";
+            var button_spec = { id: button_name,
+                                name: device_name,
+                                hidebackground: "true", 
+                                //dojotype: "dijit.form.Button",
+                                innerHTML: "Apply"
+            };
+
+            dojo.parser.parse(dom_node);
+
+            dojo.create("button", button_spec, dom_node);
+
+            var handle = dojo.connect(dojo.byId(button_name), "onclick", function(evt) {
+                var device_name = evt.target.name;
+                var form= dijit.byId("form_" + device_name);
+                if(form.isValid()){
+                    edit_device_finish(device_name, form.domNode);
+                } else {
+                    return form.validate();
+                }
+                return true;
+            });
+
             dojo.parser.parse(dom_node);
         }
     };
     var deferred = dojo.xhrGet(xhrArgs);
+}
+
+function edit_device_finish(device_name, my_form) {
+    var url = "/edit_device/" + device_name;
+    var xhrArgs = {
+        url: url,
+        form: my_form,
+        handleAs: "text",
+        load: function(data) {
+            var device_tab = dojo.byId(sanitize_name(device_name)+"_tab");
+            device_tab.innerHTML += data;
+            frontpage("joe blow")
+        }
+    }
+    var deferred = dojo.xhrPost(xhrArgs);
 }
