@@ -1,7 +1,9 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from dojango.decorators import json_response
-from forms import DeviceForm, ArpUploadForm
+from forms import DeviceForm, ArpUploadForm, LoginForm
 from models import ArpDocument
 from django.core.context_processors import csrf
 from models import DeviceType, Device, Policy, TemporaryApproval
@@ -15,8 +17,46 @@ def index(request):
     """
     Provides the root page
     """
-    return render_to_response("frontend/index.html",
+    model = {}
+    if request.user.is_authenticated():
+        model['username'] = request.user.username
+    else:
+        model['username'] = '__ANONYMOUS'
+    return render_to_response("frontend/index.html", model,
         context_instance=RequestContext(request))
+
+def login_get(request):
+    if request.method != 'GET':
+        return HttpResponse("Use a GET")
+
+    form = LoginForm()
+    model = {"form": form}
+    model.update(csrf(request))
+    return render_to_response("frontend/login_form.html", model)
+
+@json_response
+def login_post(request):
+    if request.method != 'POST':
+        return HttpResponse("Use a POST")
+    model = {}
+    logger = logging.getLogger('dri.custom')
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        if user.is_active:
+            login(request, user)
+            model["success"] = True
+            model["message"] = ""
+        else:
+            model["success"] = False
+            model["message"] = "Account disabled"
+            logger.info("Disabled account (%s) attempted login" % username)
+    else:
+        logger.info("Invalid login attempt from (%s)" % username)
+        model["success"] = False
+        model["message"] = "Invalid username and/or password"
+    return model
 
 def log_object(object, title='', max_lines=0):
     "Sometimes you just have to log an entire object out"
@@ -102,6 +142,7 @@ def iptables_download(request):
         response[section_name].append(new_entry)
     return response
 
+@login_required
 @json_response
 def known_devices(request):
     """
@@ -129,6 +170,7 @@ def _get_device_from_name_or_mac(device_name):
         device = Device.objects.get(name=device_name)
     return device
 
+@login_required
 @json_response
 def enable_device(request):
     """
@@ -167,6 +209,7 @@ def enable_device(request):
         output['message'] = msg
     return output
 
+@login_required
 def edit_device(request, device_name):
     """
     The user has been shown a list of devices on his network. He wants

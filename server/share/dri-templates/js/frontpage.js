@@ -11,8 +11,79 @@ function cleanup(id) {
     }
 }
 
+function login(errmsg) {
+    var xhrArgs = {
+        url: '/login/',
+        handleAs: "text",
+        load: function(response, ioArgs) {
+            var login_dialog = dijit.byId('login_dialog');
+            if (typeof login_dialog == 'undefined') {
+                var login_dialog = new dijit.Dialog({id: "login_dialog", title: "Login", style: "background-color:#FFFF85;"});
+                var dom_node = dojo.byId("login_dialog");
+                dom_node.innerHTML = response;
+
+                var submit_button_spec = { id: "login_submit",
+                                           //dojotype: "dijit.form.Button",
+                                           innerHTML: "Submit"
+                };
+
+                var cancel_button_spec = { id: "login_cancel",
+                                           hidebackground: "true", 
+                                           //dojotype: "dijit.form.Button",
+                                           innerHTML: "Cancel"
+                };
+
+                dojo.create("button", submit_button_spec, dom_node);
+                dojo.create("button", cancel_button_spec, dom_node);
+                dojo.create("div", {id: 'login_errmsg'}, dom_node);
+                dojo.parser.parse(dom_node);
+
+                var handle = dojo.connect(dojo.byId('login_submit'), "onclick", function(evt) {
+                    var form= dijit.byId("login_form");
+                    request_authentication(form.domNode);
+                    dojo.stopEvent(evt);
+                });
+                var handle = dojo.connect(dojo.byId('login_cancel'), "onclick", function(evt) {
+                    alert("Cancel");
+                    dojo.stopEvent(evt);
+                });
+            }
+            if (errmsg) {
+                dojo.byId('login_errmsg').innerHTML = errmsg;
+            }
+
+            //dojo.parser.parse(dom_node);
+            //dijit.byId("login_dialog").startup();
+            dijit.byId("login_dialog").show();
+
+        }
+    };
+    var deferred = dojo.xhrGet(xhrArgs);
+}
+
+function request_authentication(my_form) {
+    var url = "/authenticate/";
+    var xhrArgs = {
+        url: url,
+        handleAs: "json",
+        content:{username: my_form.username.value,
+                 password: my_form.password.value,
+                 csrfmiddlewaretoken: my_form.csrfmiddlewaretoken.value
+        },
+        load: function(data) {
+            if (!data.success) {
+                login(data.message);
+            } else {
+                dijit.byId("login_dialog").hide();
+                known_devices(data.first_name)
+            }
+        }
+    }
+    var deferred = dojo.xhrPost(xhrArgs);
+}
+
 // Our basic home-page for the app
-function frontpage(username) {
+function known_devices(username) {
     var xhrArgs = {
         url: '/known_devices/',
         handleAs: "json",
@@ -45,6 +116,9 @@ function frontpage(username) {
             this.container.innerHTML = "An unexpected error occurred: " + error;
         }
     };
+    if (username == "__ANONYMOUS") {
+        login()
+    }
     var deferred = dojo.xhrGet(xhrArgs);
     /*
     // There is some kind of bug with Dojo or I don't understand what's going on.
@@ -139,7 +213,7 @@ function enable_device(device_name, my_form) {
         load: function(data) {
             var device_tab = dojo.byId(sanitize_name(device_name)+"_tab");
             device_tab.innerHTML += data;
-            frontpage("joe blow")
+            known_devices("joe blow")
         }
     }
     var deferred = dojo.xhrPost(xhrArgs);
@@ -154,7 +228,7 @@ function edit_device_finish(device_name, my_form) {
         load: function(data) {
             var device_tab = dojo.byId(sanitize_name(device_name)+"_tab");
             device_tab.innerHTML += data;
-            frontpage("joe blow")
+            known_devices("joe blow")
         }
     }
     var deferred = dojo.xhrPost(xhrArgs);
