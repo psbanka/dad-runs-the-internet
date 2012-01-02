@@ -121,7 +121,7 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    #'gunicorn',
+    'gunicorn',
     'dojango',
     'dri_web.frontend',
     'django.contrib.auth',
