@@ -1,0 +1,26 @@
+      <form method="POST" id="login_form" dojoType="dijit.form.Form">
+        <div id="login_content_pane" dojoType="dijit.layout.ContentPane" title="Login"
+            style="padding:10px; width: 300px; height: 300px;">
+            <h1>Please log in</h2>
+            <hr class="spacer">
+            <table width="258">
+                {{ form.as_table }}
+            </table>
+            {% csrf_token %}
+        </div>
+        <!--
+          <tr>
+            <td colspan="2" align="center">
+            <table border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" valign="top"><button id="login_ok" >Ok</button></td>
+                  &nbsp;
+                  <td align="left" valign="top"><button id="login_cancel">Cancel</button></td>
+                  &nbsp;
+                  <td><button id="login_forgot"> Forgot your password?</button></td>
+                </tr>
+           </table>
+           </td>
+          </tr>
+        -->
+      </form>
