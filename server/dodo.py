@@ -1,7 +1,6 @@
 import os
 from commands import getstatusoutput as gso
 import sys
-import glob
 
 OK = 0
 SYSTEM_ROOT = os.environ.get("VIRTUAL_ENV", '/')
@@ -15,10 +14,11 @@ VERSION_INFO = {
     "Revision": "%s",
 }
 """
+DB_FILE = "%s/var/lib/dri/web_models.db" % SYSTEM_ROOT
 DJANGO_PREAMBLE = 'DJANGO_SETTINGS_MODULE="dri_server.web.settings" '
 NOSE_CMD = '%s %s `which nosetests` --exe --with-id ' % (DJANGO_PREAMBLE, PYTHON_EXE)
 QUICKTEST_ADDENDUM = " -vv -s --stop"
-NGINX_CMD = 'nginx -c /home/peter/work/etc/nginx/nginx.conf -p /home/peter/work/ -g "env prefix=/tmp; env dri_root=/home/peter/work/; error_log loggy;"'
+NGINX_CMD = 'nginx -c %s/etc/nginx/nginx.conf -p %s -g "env prefix=/tmp; env dri_root=%s; error_log loggy;"' % (SYSTEM_ROOT, SYSTEM_ROOT, SYSTEM_ROOT)
 
 ##################### EXCEPTIONS
 
@@ -64,7 +64,7 @@ def server_command(command, quiet = False):
         cmd = NGINX_CMD
         os.system(cmd)
     else:
-        pidfile = '/home/peter/work/var/run/gunicorn/dri_web.pid'
+        pidfile = '%s/var/run/gunicorn.pid' % SYSTEM_ROOT
         try:
             pid = open(pidfile).read()
             os.system('kill %s' % pid)
@@ -96,24 +96,39 @@ def task_clean_build():
 def task_syncdb():
     return {
         "actions": [
-                    "rm -f %s/var/lib/dri/web_models.db" % SYSTEM_ROOT, 
+                    "rm -f %s" % DB_FILE, 
                     "%s python src/web/manage.py syncdb --noinput" % DJANGO_PREAMBLE,
-                    "cp -f %s/var/lib/dri/web_models.db ../defaults/web_models.db" % SYSTEM_ROOT, 
+                    "cp -f %s ../defaults/web_models.db" % DB_FILE, 
                    ],
         "task_dep": ['config_files', 'install_everything'],
         "verbosity": 2,
     }
 
+def _create_config_file(template_name, dest_name):
+    sys.path.append("%s/dri" % SYSTEM_ROOT)
+    module_name = 'defaults.%s' % template_name
+    template = ""
+    import_cmd = "from %s import template" % module_name
+    exec(import_cmd)
+    config_data = template % {'system_root': SYSTEM_ROOT}
+    open("%s/%s" % (SYSTEM_ROOT, dest_name), 'w').write(config_data)
+
 def task_config_files():
     "Configures nginx, etc."
     return {
             "actions": [
+                        "mkdir -p %s/var/run" % SYSTEM_ROOT,
                         "mkdir -p %s/etc/nginx" % SYSTEM_ROOT,
                         "mkdir -p %s/var/log/nginx" % SYSTEM_ROOT,
                         "mkdir -p %s/var/lib/dri/media" % SYSTEM_ROOT,
+                        "touch %s/var/log/nginx/error.log" % SYSTEM_ROOT,
+                        "touch %s/var/log/gunicorn.log" % SYSTEM_ROOT,
+                        "touch %s/var/run/nginx.pid" % SYSTEM_ROOT,
+                        (_create_config_file, ("nginx_template", "/etc/nginx/nginx.conf")),
+                        (_create_config_file, ("dri_conf_template", "/etc/nginx/dri.conf")),
                         "cp ../defaults/web_models.db %s/var/lib/dri" % SYSTEM_ROOT,
-                        "cp ../defaults/nginx.conf %s/etc/nginx" % SYSTEM_ROOT,
-                        "cp ../defaults/dri.conf %s/etc/nginx" % SYSTEM_ROOT,
+                        #"cp ../defaults/nginx.conf %s/etc/nginx" % SYSTEM_ROOT,
+                        #"cp ../defaults/dri.conf %s/etc/nginx" % SYSTEM_ROOT,
                        ]
            }
 

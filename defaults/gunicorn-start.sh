@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
-LOGFILE=$DRI_ROOT/var/log/gunicorn/dri_web.log
-PIDFILE=$DRI_ROOT/var/run/gunicorn/dri_web.pid
+LOGFILE=$VIRTUAL_ENV/var/log/gunicorn.log
+PIDFILE=$VIRTUAL_ENV/var/run/gunicorn.pid
 echo "logging to: " $LOGFILE
 LOGDIR=$(dirname $LOGFILE)
 PIDDIR=$(dirname $PIDFILE)
@@ -13,10 +13,10 @@ USER=peter
 GROUP=peter
 DJANGO_SETTINGS_MODULE="dri_server.web.settings" 
 export DJANGO_SETTINGS_MODULE
-cd /home/peter/work/dri
+cd $VIRTUAL_ENV/dri
 
 test -d $LOGDIR || mkdir -p $LOGDIR
 test -d $PIDDIR || mkdir -p $PIDDIR
-exec /home/peter/work/bin/gunicorn_django -w $NUM_WORKERS \
+exec $VIRTUAL_ENV/bin/gunicorn_django -w $NUM_WORKERS \
   --log-level=debug \
   --log-file=$LOGFILE --pid=$PIDFILE -D
