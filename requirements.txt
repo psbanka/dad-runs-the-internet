@@ -3,5 +3,6 @@ distribute==0.6.19
 doit==0.14.0
 dojango==0.5.4
 gunicorn==0.13.4
+psycopg2==2.4.4
 pyinotify==0.9.3
 wsgiref==0.1.2

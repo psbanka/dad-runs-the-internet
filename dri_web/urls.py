@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib import admin
 admin.autodiscover()
 
-from dri_server.web.frontend import views
+from frontend import views
 
 urlpatterns = patterns('',
     (r'^dojango/', include('dojango.urls')),

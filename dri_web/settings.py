@@ -52,7 +52,8 @@ USE_L10N = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = '%s/var/lib/dri/media/' % SYSTEM_ROOT
+MEDIA_ROOT = '%s/dri/media/' % SYSTEM_ROOT
+print ">>>>>>>>>>>",MEDIA_ROOT
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -108,12 +109,12 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
-ROOT_URLCONF = 'dri_server.web.urls'
+ROOT_URLCONF = 'dri_web.urls'
 DOJANGO_BASE_MEDIA_ROOT="/lib"
 DOJANGO_BASE_DOJO_ROOT="/lib/dojo"
 
 TEMPLATE_DIRS = (
-    "%s/share/dri-templates" % SYSTEM_ROOT,
+    "%s/dri/media" % SYSTEM_ROOT,
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -122,7 +123,7 @@ TEMPLATE_DIRS = (
 INSTALLED_APPS = (
     #'gunicorn',
     'dojango',
-    'dri_server.web.frontend',
+    'dri_web.frontend',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
