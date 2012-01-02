@@ -11,7 +11,7 @@ function cleanup(id) {
     }
 }
 
-function login(errmsg) {
+function login(username, errmsg) {
     var xhrArgs = {
         url: '/login/',
         handleAs: "text",
@@ -52,10 +52,13 @@ function login(errmsg) {
                 dojo.byId('login_errmsg').innerHTML = errmsg;
             }
 
-            //dojo.parser.parse(dom_node);
-            //dijit.byId("login_dialog").startup();
-            dijit.byId("login_dialog").show();
-
+            if (username === "__ANONYMOUS") {
+                //dojo.parser.parse(dom_node);
+                //dijit.byId("login_dialog").startup();
+                dijit.byId("login_dialog").show();
+            } else {
+                known_devices("bypassed login screen for known-user");
+            }
         }
     };
     var deferred = dojo.xhrGet(xhrArgs);
@@ -66,13 +69,14 @@ function request_authentication(my_form) {
     var xhrArgs = {
         url: url,
         handleAs: "json",
+        username: my_form.username.value,
         content:{username: my_form.username.value,
                  password: my_form.password.value,
                  csrfmiddlewaretoken: my_form.csrfmiddlewaretoken.value
         },
         load: function(data) {
             if (!data.success) {
-                login(data.message);
+                login(this.username, data.message);
             } else {
                 dijit.byId("login_dialog").hide();
                 known_devices(data.first_name)
@@ -144,29 +148,23 @@ function edit_device_start(device_name) {
         url: '/edit_device/' + device_name,
         handleAs: "text",
         load: function(response, ioArgs) {
-            var tab_container = dijit.byId("topTabs");
-            var tab_name = sanitize_name(device_name) + "_tab"
-            var tab_spec = {id: tab_name,
-                            closable: "true",
-                            title: device_name,
-                            style: "padding:10px;"
-            }
-            var device_tab = new dijit.layout.ContentPane(tab_spec);
-            tab_container.addChild(device_tab);
-            tab_container.selectChild(device_tab);
-            var dom_node = dojo.byId(tab_name);
+            // Clean up mess left behind by dojango
+            cleanup('id_device_name');
+            cleanup('id_policy');
+            cleanup('id_mac_address');
+            cleanup('id_device_type');
+            cleanup('id_device_allowed');
+            var dom_node = dojo.byId('main_pane');
             dom_node.innerHTML = response;
 
-            var apply_button_name = device_name + "_apply";
-            var apply_button_spec = { id: apply_button_name,
+            var apply_button_spec = { id: "edit_device_apply",
                                       name: device_name,
                                       hidebackground: "true", 
                                       //dojotype: "dijit.form.Button",
                                       innerHTML: "Apply"
             };
 
-            var enable_button_name = device_name + "_enable";
-            var enable_button_spec = { id: enable_button_name,
+            var enable_button_spec = { id: "edit_device_enable",
                                        name: device_name,
                                        hidebackground: "true", 
                                        //dojotype: "dijit.form.Button",
@@ -178,7 +176,7 @@ function edit_device_start(device_name) {
             dojo.create("button", apply_button_spec, dom_node);
             dojo.create("button", enable_button_spec, dom_node);
 
-            var handle = dojo.connect(dojo.byId(apply_button_name), "onclick", function(evt) {
+            var handle = dojo.connect(dojo.byId("edit_device_apply"), "onclick", function(evt) {
                 var device_name = evt.target.name;
                 var form= dijit.byId("form_" + device_name);
                 if(form.isValid()){
@@ -189,7 +187,7 @@ function edit_device_start(device_name) {
                 return true;
             });
 
-            var handle = dojo.connect(dojo.byId(enable_button_name), "onclick", function(evt) {
+            var handle = dojo.connect(dojo.byId("edit_device_enable"), "onclick", function(evt) {
                 var device_name = evt.target.name;
                 var form= dijit.byId("form_" + device_name);
                 enable_device(device_name, form.domNode);
@@ -211,8 +209,8 @@ function enable_device(device_name, my_form) {
                  csrfmiddlewaretoken: my_form.csrfmiddlewaretoken.value
         },
         load: function(data) {
-            var device_tab = dojo.byId(sanitize_name(device_name)+"_tab");
-            device_tab.innerHTML += data;
+            var main_pane = dojo.byId("main_pane");
+            main_pane.innerHTML += data;
             known_devices("joe blow")
         }
     }
@@ -226,8 +224,8 @@ function edit_device_finish(device_name, my_form) {
         form: my_form,
         handleAs: "text",
         load: function(data) {
-            var device_tab = dojo.byId(sanitize_name(device_name)+"_tab");
-            device_tab.innerHTML += data;
+            var main_pane = dojo.byId("main_pane");
+            main_pane.innerHTML += data;
             known_devices("joe blow")
         }
     }

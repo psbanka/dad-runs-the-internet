@@ -56,20 +56,36 @@
     
             </div><!-- end AccordionContainer -->
 
-            <!-- top tabs (marked as "center" to take up the main part of the BorderContainer) -->
+            <div dojoType="dijit.TitlePane" region="center" title="Main" id='main_pane'>
+                <p>This is a title pane, containing another title pane ...</p>
+                <div dojoType="dijit.TitlePane" title="Inner pane" width="125">
+
+                    <p>And this is the inner title pane...</p>
+
+                    <p>Sed sollicitudin suscipit risus. Nam
+                    ullamcorper. Sed nisl lectus, pellentesque nec,
+                    malesuada eget, ornare a, libero. Lorem ipsum dolor
+                    sit amet, consectetuer adipiscing elit.</p>
+
+                </div><!-- end inner titlepane -->
+                <p>And this is the closing line for the outer title pane.</p>
+            </div><!-- end outer title pane -->
+
+
+            <!-- 
             <div dojoType="dijit.layout.TabContainer" region="center" id="topTabs">
-                <!-- start upper tab -->
                 <div id="tab3" dojoType="dijit.layout.ContentPane" title="Welcome"
                     style="padding:10px; display:none;  ">
 
                     <div class="box">
                     <p>Welcome to Dad Runs the Internet, the site where you get to wear the pants on your
                        own WiFi network. We put you in charge of your own stuff.<p>
-                    </div><!-- end:box -->
+                    </div>
 
-                </div><!-- end upper tab-->
+                </div>
 
-            </div><!-- end of region="center" TabContainer -->
+            </div>
+            -->
     
             <!-- bottom right tabs -->
             <div dojoType="dijit.layout.TabContainer" id="bottomTabs" tabPosition="bottom" selectedChild="btab1" region="bottom" splitter="true">
@@ -152,7 +168,7 @@
             if(strayGlobals.length){
                 console.warn("Stray globals: "+strayGlobals.join(", "));
             }
-            login();
+            login("{{username}}");
         });
 
     </script>
