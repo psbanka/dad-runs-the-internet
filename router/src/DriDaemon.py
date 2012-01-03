@@ -7,6 +7,7 @@ from uploader import upload_arp_table
 from Exceptions import DownloadException, UploadException, CommandException
 
 MAX_LOOPS = 0
+INTER_LOOP_SLEEP = 10
 
 class DriDaemon:
 
@@ -19,7 +20,7 @@ class DriDaemon:
         syslog.syslog('Starting dri...')
 
         while not self.kill_switch:
-            time.sleep(1)
+            time.sleep(INTER_LOOP_SLEEP)
             if MAX_LOOPS:
                 self.loops += 1
                 if self.loops > MAX_LOOPS:
