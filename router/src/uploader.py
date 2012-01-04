@@ -8,7 +8,7 @@ from util import run_or_die, OK, FAIL
 from Exceptions import UploadException
 
 TEST_FILE = '/etc/passwd'
-URL = "http://192.168.11.114:8080/arp_upload/"
+URL = "http://falling-stone-8827.herokuapp.com//arp_upload/"
 
 def grab_csrf():
     cmd = "curl -c /tmp/cookies.txt %s 2>/dev/null" % URL
