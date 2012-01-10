@@ -10,15 +10,15 @@
 		<meta http-equiv="cache-control" content="no-cache">
 		<meta http-equiv="pragma" content="no-cache">
 		
-		<title>TweetView</title>
+		<title>DriMobile</title>
 		<link href="http://ajax.googleapis.com/ajax/libs/dojo/1.6/dojox/mobile/themes/iphone/iphone.css" rel="stylesheet" />
-		<link href="media/js/tweetview/resources/TweetView.css" rel="stylesheet" />
+		<link href="media/js/drimobile/resources/DriMobile.css" rel="stylesheet" />
 		<script type="text/javascript">
 			djConfig = {
 				isDebug: true,
 				baseUrl: './',
 				modulePaths: {
-					tweetview: 'media/js/tweetview'
+					drimobile: 'media/js/drimobile'
 				},
 				parseOnLoad: true
 			};
@@ -33,11 +33,11 @@
 			dojo.require("dojox.mobile.TabBar");
 			// Require the compat if the client isn't Webkit-based
 			dojo.requireIf(!dojo.isWebKit,"dojox.mobile.compat");
-			// Require TweetViewUI
-			dojo.require("tweetview.TweetView"); 
-			dojo.require("tweetview.SettingsView"); 
-			// Set accounts for tweetview directly on the namespace
-			tweetview.ACCOUNTS = {
+			// Require DriMobileUI
+			dojo.require("drimobile.DriMobile"); 
+			dojo.require("drimobile.SettingsView"); 
+			// Set accounts for drimobile directly on the namespace
+			drimobile.ACCOUNTS = {
 				dojo: { enabled: true },
 				sitepen: { enabled: true }
 			};
@@ -54,34 +54,34 @@
 	<body>
 		
 		<!-- tweets view -->
-		<div id="tweets" dojoType="tweetview.TweetView" selected="true">
+		<div id="tweets" dojoType="drimobile.DriMobile" selected="true">
 			<h1 dojoType="dojox.mobile.Heading" fixed="top">
 				<!-- the refresh button -->
-				<div dojoType="dojox.mobile.ToolBarButton" class="mblDomButton tweetviewRefresh" icon="media/js/tweetview/resources/images/refresh.png"></div>
+				<div dojoType="dojox.mobile.ToolBarButton" class="mblDomButton drimobileRefresh" icon="media/js/drimobile/resources/images/refresh.png"></div>
 				Tweets
 			</h1>
-			<ul dojoType="dojox.mobile.RoundRectList" class="tweetviewList"></ul>
+			<ul dojoType="dojox.mobile.RoundRectList" class="drimobileList"></ul>
 		</div>
 
 		<!-- mentions view -->
-		<div id="mentions" dojoType="tweetview.TweetView" serviceUrl="http://search.twitter.com/search.json?q=@${account}&amp;since_id=${since_id}">
+		<div id="mentions" dojoType="drimobile.DriMobile" serviceUrl="http://search.twitter.com/search.json?q=@${account}&amp;since_id=${since_id}">
 			<h1 dojoType="dojox.mobile.Heading" fixed="top">
 				<!-- the refresh button -->
-				<div dojoType="dojox.mobile.ToolBarButton" class="mblDomButton tweetviewRefresh" icon="media/js/tweetview/resources/images/refresh.png"></div>
+				<div dojoType="dojox.mobile.ToolBarButton" class="mblDomButton drimobileRefresh" icon="media/js/drimobile/resources/images/refresh.png"></div>
 				Mentions
 			</h1>
-			<ul dojoType="dojox.mobile.RoundRectList" class="tweetviewList"></ul>
+			<ul dojoType="dojox.mobile.RoundRectList" class="drimobileList"></ul>
 		</div>
 		
 		<!-- settings view -->
 		<div id="settings" dojoType="dojox.mobile.ScrollableView">
 			<h1 dojoType="dojox.mobile.Heading" fixed="top">Settings</h1>
 			<h2 dojoType="dojox.mobile.RoundRectCategory">Show</h2>
-			<ul dojoType="dojox.mobile.RoundRectList" class="tweetviewList"></ul>
+			<ul dojoType="dojox.mobile.RoundRectList" class="drimobileList"></ul>
 		</div>
 		
 		<!-- the bottom tabbar -->
-		<ul dojoType="dojox.mobile.TabBar" id="tabBar" class="tweetviewTabBar" iconBase="media/js/tweetview/resources/images/iconStrip.png">
+		<ul dojoType="dojox.mobile.TabBar" id="tabBar" class="drimobileTabBar" iconBase="media/js/drimobile/resources/images/iconStrip.png">
 			<!-- top left width height -->
 			<li dojoType="dojox.mobile.TabBarButton" iconPos1="0,0,29,30" iconPos2="29,0,29,30" selected="true" moveTo="tweets">Tweets</li>
 			<li dojoType="dojox.mobile.TabBarButton" iconPos1="0,29,29,30" iconPos2="29,29,29,30" moveTo="mentions">Mentions</li>

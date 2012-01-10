@@ -1,21 +1,21 @@
 // Provide the UI class
-dojo.provide("tweetview.SettingsView");
+dojo.provide("drimobile.SettingsView");
 
 // Dependencies here
 dojo.require("dojox.mobile.ScrollableView");
 dojo.require("dojo.DeferredList");
 dojo.require("dojo.io.script");
-dojo.require("tweetview._ViewMixin");
+dojo.require("drimobile._ViewMixin");
 dojo.require("dojo.date");
 
 // Declare the class;  inherits from ScrollableView
-dojo.declare("tweetview.SettingsView", [dojox.mobile.ScrollableView, tweetview._ViewMixin], {
+dojo.declare("drimobile.SettingsView", [dojox.mobile.ScrollableView, drimobile._ViewMixin], {
 	
 	// Create a template string for tweets:
-	accountTemplateString: '<img src="${avatar}" alt="${user}" class="tweetviewAvatar" />' +
-	'<div class="tweetviewContent">' + 
-		'<div class="tweetviewUser">${user}</div>' + 
-	'</div><div class="tweetviewClear"></div>',
+	accountTemplateString: '<img src="${avatar}" alt="${user}" class="drimobileAvatar" />' +
+	'<div class="drimobileContent">' + 
+		'<div class="drimobileUser">${user}</div>' + 
+	'</div><div class="drimobileClear"></div>',
 	
 	// Views that this widget should have reference to
 	views: "",
@@ -36,7 +36,7 @@ dojo.declare("tweetview.SettingsView", [dojox.mobile.ScrollableView, tweetview._
 		
 		// Sort the accounts
 		var accounts = [];
-		for(var account in tweetview.ACCOUNTS) {
+		for(var account in drimobile.ACCOUNTS) {
 			accounts.push(account);
 		}
 		accounts.sort();
@@ -66,7 +66,7 @@ dojo.declare("tweetview.SettingsView", [dojox.mobile.ScrollableView, tweetview._
 				if(!def[0]) {
 					// Remove the account from the list to prevent further problems
 					// Also remove from our "local" sorted accounts list
-					delete tweetview.ACCOUNTS[accounts[i]];
+					delete drimobile.ACCOUNTS[accounts[i]];
 					delete accounts[i];
 					return;
 				}
@@ -89,8 +89,8 @@ dojo.declare("tweetview.SettingsView", [dojox.mobile.ScrollableView, tweetview._
 					
 					// Create the switch
 					var userSwitch = new dojox.mobile.Switch({
-						"class": "tweetviewSwitch",
-						value: tweetview.ACCOUNTS[user.screen_name].enabled ? "on" : "off"
+						"class": "drimobileSwitch",
+						value: drimobile.ACCOUNTS[user.screen_name].enabled ? "on" : "off"
 					}).placeAt(item.containerNode, "first");
 					
 					// Add change event to the switch
@@ -99,7 +99,7 @@ dojo.declare("tweetview.SettingsView", [dojox.mobile.ScrollableView, tweetview._
 						var isOn = newState == "on";
 						
 						// Update our ACCOUNTS hash
-						tweetview.ACCOUNTS[user.screen_name].enabled = isOn;
+						drimobile.ACCOUNTS[user.screen_name].enabled = isOn;
 						
 						// For each Pane widget, call the onUserChange method
 						dojo.forEach(this.viewWidgets, function(viewWidget) {

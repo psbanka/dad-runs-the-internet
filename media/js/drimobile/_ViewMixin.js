@@ -1,17 +1,17 @@
 // Provide the class
-dojo.provide("tweetview._ViewMixin");
+dojo.provide("drimobile._ViewMixin");
 
 // Declare the class
-dojo.declare("tweetview._ViewMixin", null, {
+dojo.declare("drimobile._ViewMixin", null, {
 	// Returns this pane's list
 	getListNode: function() {
-		//return dojo.query(".tweetviewList",this.domNode)[0];
+		//return dojo.query(".drimobileList",this.domNode)[0];
 		//return this.domNode.getElementsByClassName()[0];
-		return this.getElements("tweetviewList", this.domNode)[0];
+		return this.getElements("drimobileList", this.domNode)[0];
 	},
 	// Updates the list widget's state
 	showListNode: function(show) {
-		dojo[(show ? "remove" : "add") + "Class"](this.listNode, "tweetviewHidden");
+		dojo[(show ? "remove" : "add") + "Class"](this.listNode, "drimobileHidden");
 	},
 	// Pushes data into a template - primitive
 	substitute: function(template,obj) {
