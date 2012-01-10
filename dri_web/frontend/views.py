@@ -141,6 +141,7 @@ def known_devices(request):
         output[record.mac_address] = {'name': record.name,
                                       'type': record.device_type,
                                       'policy': record.policy,
+                                      'is_allowed': record.is_allowed(),
                                      }
     return output
 

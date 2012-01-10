@@ -46,16 +46,50 @@ dojo.declare("drimobile.DriMobile", [dojox.mobile.ScrollableView, drimobile._Vie
 	},
 	
 	refresh: function() {
+        var xhrArgs = {
+            url: '/known_devices/',
+            handleAs: "json",
+            load: dojo.hitch(this, function(response, ioArgs) { 
+                data = response.valueOf();
+                for (var mac_address in data) {
+                    if (mac_address === 'success') {
+                        continue;
+                    }
+                    if (data.hasOwnProperty(mac_address)) {
+                        console.log(mac_address);
+                        var device = data[mac_address];
+                    
+                        var item = new dojox.mobile.ListItem({
+                            "class": "drimobileListItem user-" + 'fred'
+                        }).placeAt(this.listNode,"first");
+                        
+                        item.containerNode.innerHTML = this.substitute(this.deviceTemplateString, {
+                            text: mac_address,
+                            user: device.name || mac_address,
+                            name: 'device-name',
+                            avatar: 'picture-url',
+                            time: device.is_allowed,
+                            created_at: 'create-at',
+                            id: 'id'
+                        });
+                    }
+                }
+                this.showListNode(true);
+                // Set the refresh icon back
+                this.refreshButton.iconNode.src = this.iconImage;
+                this.refreshButton.select(true);
+            })
+        };
+        var deferred = dojo.xhrGet(xhrArgs);
+
 		this.refreshButton.iconNode.src = this.iconLoading;
 		
 		// Button has been "pressed"
 		this.refreshButton.select();
-		
-        this.onTweetsReceived();
+		//this.load();
 	},
-	
-	// Event for when content is loaded from Twitter
-	onTweetsReceived: function() {
+
+    load: function() {
         var item = new dojox.mobile.ListItem({
             "class": "drimobileListItem user-" + 'fred'
         }).placeAt(this.listNode,"first");
@@ -75,6 +109,6 @@ dojo.declare("drimobile.DriMobile", [dojox.mobile.ScrollableView, drimobile._Vie
         this.refreshButton.iconNode.src = this.iconImage;
         this.refreshButton.select(true);
 
-	}
+    }
 	
 });
