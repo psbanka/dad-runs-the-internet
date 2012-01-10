@@ -1,0 +1,115 @@
+/* iOS styles */
+
+/* vertically center the image */
+.drimobileRefresh {
+	float:right;
+}
+.drimobileRefresh img	{
+	margin-top:6px;
+}
+
+/* drimobile pane */
+.mblScrollableViewContainer {
+	padding-bottom:40px !important;
+}
+
+.drimobileList {
+	
+}
+.drimobileHidden {
+	display:none;
+}
+
+.drimobileList li {
+	min-height:55px;
+	padding-top:8px;
+}
+
+.drimobileListItem { /* special formatting to allow 2 lines of content */
+	line-height:18px;
+	height:auto;
+}
+
+/* user's avatar */
+.drimobileAvatar {
+	float:left;
+}
+/* content wrapper for devices */
+.drimobileContent {
+	padding-left:60px;
+}
+
+/* username formatting */
+.drimobileUser {
+	font-size:80%;
+}
+
+/* actual device text formatting */
+.drimobileText {
+	font-size:70%;
+	font-weight:normal;
+	padding-right:50px;
+	padding-bottom:10px;
+}
+
+.android .drimobileText {
+	font-size:50%;
+}
+
+
+/* device time */
+.drimobileTime {
+	float:right;
+	color:#777;
+	font-size:65%;
+	font-weight:normal;
+	padding-right:10px;
+}
+
+/* clears floats at the end of the list item */
+.drimobileClear {
+	clear:both;
+}
+
+.drimobileSwitch {
+	right:10px;
+	top:10px;
+	float:right;
+}
+
+.drimobileHidden {
+	display:none;
+}
+
+.drimobileTabBar {
+	margin-top:-49px;
+}
+
+
+/* Android styles */
+
+.android .drimobileRefresh img {
+    margin-top: 3px;
+}
+
+.android .mblRoundRectList {
+    background-color: #000;
+    border: none;
+}
+
+.android .drimobileTime {
+    color: #FFF;
+}
+
+.android .mblTabBarButtonTextBox {
+    color: #FFF;
+}
+
+.android .mblTabBar .mblTabButtonSelected {
+    background-color: transparent;
+    border-radius: 0;
+}
+
+.android .mblColorDefaultSet {
+    background: #FFC700;
+} 

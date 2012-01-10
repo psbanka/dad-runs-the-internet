@@ -127,7 +127,7 @@ def iptables_download(request):
         response[section_name].append(new_entry)
     return response
 
-@login_required
+#@login_required
 @json_response
 def known_devices(request):
     """
@@ -136,17 +136,13 @@ def known_devices(request):
     """
     output = {}
     for record in Device.objects.all():
-        device_description = "Unknown device-type"
-        if record.device_type is not None:
-            device_description = record.device_type.description
-        device_name = record.mac_address
-        if record.name is not None:
-            device_name = record.name
-        try:
-            output[device_description].append(device_name)
-        except KeyError:
-            output[device_description] = [device_name]
-    return {"devices": output}
+        if record.mac_address == '<incomplete>':
+            continue
+        output[record.mac_address] = {'name': record.name,
+                                      'type': record.device_type,
+                                      'policy': record.policy,
+                                     }
+    return output
 
 def _get_device_from_name_or_mac(device_name):
     try:
