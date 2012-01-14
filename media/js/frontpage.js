@@ -18,7 +18,7 @@ function login(username, errmsg) {
         load: function(response, ioArgs) {
             var login_dialog = dijit.byId('login_dialog');
             if (typeof login_dialog == 'undefined') {
-                var login_dialog = new dijit.Dialog({id: "login_dialog", title: "Login", style: "background-color:#FFFF85;"});
+                login_dialog = new dijit.Dialog({id: "login_dialog", title: "Login", style: "background-color:#FFFF85;"});
                 var dom_node = dojo.byId("login_dialog");
                 dom_node.innerHTML = response;
 
@@ -38,12 +38,12 @@ function login(username, errmsg) {
                 dojo.create("div", {id: 'login_errmsg'}, dom_node);
                 dojo.parser.parse(dom_node);
 
-                var handle = dojo.connect(dojo.byId('login_submit'), "onclick", function(evt) {
+                dojo.connect(dojo.byId('login_submit'), "onclick", function(evt) {
                     var form= dijit.byId("login_form");
                     request_authentication(form.domNode);
                     dojo.stopEvent(evt);
                 });
-                var handle = dojo.connect(dojo.byId('login_cancel'), "onclick", function(evt) {
+                dojo.connect(dojo.byId('login_cancel'), "onclick", function(evt) {
                     alert("Cancel");
                     dojo.stopEvent(evt);
                 });
@@ -79,10 +79,10 @@ function request_authentication(my_form) {
                 login(this.username, data.message);
             } else {
                 dijit.byId("login_dialog").hide();
-                known_devices(data.first_name)
+                known_devices(data.first_name);
             }
         }
-    }
+    };
     var deferred = dojo.xhrPost(xhrArgs);
 }
 
@@ -94,16 +94,39 @@ function known_devices(username) {
         container: dojo.byId("known_devices"),
         load: function(response, ioArgs) {
             this.container.innerHTML = ''; // Clear out old stuff
-            for (classification in response.devices) {
-                dojo.create("h3", {innerHTML: classification}, this.container);
-                var device_names = response.devices[classification];
+            data = response.valueOf();
+            var tree = {};
+            var description;
+            for (var mac_address in data) {
+                if (mac_address === 'success') {
+                    continue;
+                }
+                if (mac_address === 'csrf') {
+                    continue;
+                }
+                if (data.hasOwnProperty(mac_address)) {
+                    var device = data[mac_address];
+                    description = "Unknown";
+                    if (device.type !== null) {
+                        description = device.type.description;
+                    }
+                    if (!tree[description]) {
+                        tree[description] = [];
+                    }
+                    tree[description].push({'name': device.name, 'mac_address': mac_address});
+                }
+            }
+                     
+            for (description in tree) {
+                dojo.create("h3", {innerHTML: description}, this.container);
+                var devices = tree[description];
                 var list_holder = dojo.create("ul", {}, this.container);
-                for (i=0; i<device_names.length; i++) {
-                    var device_name = device_names[i];
+                for (i=0; i<devices.length; i++) {
+                    var device_name = devices[i].name || devices[i].mac_address;
                     var list_item = dojo.create("li", {}, list_holder);
-                    var button_name = device_name + "_manage_button";
+                    var button_name = devices[i].mac_address + "_manage_button";
                     var button_spec = { id: button_name,
-                                        name: device_name,
+                                        name: devices[i].mac_address,
                                         hidebackground: "true", 
                                         //dojotype: "dijit.form.Button",
                                         innerHTML: device_name
@@ -121,7 +144,7 @@ function known_devices(username) {
         }
     };
     if (username == "__ANONYMOUS") {
-        login()
+        login();
     }
     var deferred = dojo.xhrGet(xhrArgs);
     /*
@@ -140,15 +163,16 @@ function known_devices(username) {
 }
 
 function sanitize_name(device_name) {
-    return device_name.replace(' ', '').replace('"', '').replace("'", '')
+    return device_name.replace(' ', '').replace('"', '').replace("'", '');
 }
 
-function edit_device_start(device_name) {
+function edit_device_start(mac_address) {
     var xhrArgs = {
-        url: '/edit_device/' + device_name,
+        url: '/edit_device/' + mac_address,
         handleAs: "text",
         load: function(response, ioArgs) {
             // Clean up mess left behind by dojango
+            cleanup('edit_pane');
             cleanup('id_device_name');
             cleanup('id_policy');
             cleanup('id_mac_address');
@@ -158,14 +182,14 @@ function edit_device_start(device_name) {
             dom_node.innerHTML = response;
 
             var apply_button_spec = { id: "edit_device_apply",
-                                      name: device_name,
+                                      name: mac_address,
                                       hidebackground: "true", 
                                       //dojotype: "dijit.form.Button",
                                       innerHTML: "Apply"
             };
 
             var enable_button_spec = { id: "edit_device_enable",
-                                       name: device_name,
+                                       name: mac_address,
                                        hidebackground: "true", 
                                        //dojotype: "dijit.form.Button",
                                        innerHTML: "Enable for 30 min"
@@ -176,21 +200,21 @@ function edit_device_start(device_name) {
             dojo.create("button", apply_button_spec, dom_node);
             dojo.create("button", enable_button_spec, dom_node);
 
-            var handle = dojo.connect(dojo.byId("edit_device_apply"), "onclick", function(evt) {
-                var device_name = evt.target.name;
-                var form= dijit.byId("form_" + device_name);
+            dojo.connect(dojo.byId("edit_device_apply"), "onclick", function(evt) {
+                var mac_address = evt.target.name;
+                var form = dijit.byId("form_" + mac_address);
                 if(form.isValid()){
-                    edit_device_finish(device_name, form.domNode);
+                    edit_device_finish(mac_address, form.domNode);
                 } else {
                     return form.validate();
                 }
                 return true;
             });
 
-            var handle = dojo.connect(dojo.byId("edit_device_enable"), "onclick", function(evt) {
-                var device_name = evt.target.name;
-                var form= dijit.byId("form_" + device_name);
-                enable_device(device_name, form.domNode);
+            dojo.connect(dojo.byId("edit_device_enable"), "onclick", function(evt) {
+                var mac_address = evt.target.name;
+                var form= dijit.byId("form_" + mac_address);
+                enable_device(mac_address, form.domNode);
             });
 
             dojo.parser.parse(dom_node);
@@ -199,26 +223,29 @@ function edit_device_start(device_name) {
     var deferred = dojo.xhrGet(xhrArgs);
 }
 
-function enable_device(device_name, my_form) {
+function enable_device(mac_address, my_form) {
     var url = "/enable_device/";
     var xhrArgs = {
         url: url,
         handleAs:"json",
-        content:{device_name: device_name,
+        content:{mac_address: mac_address,
                  duration: 30,
                  csrfmiddlewaretoken: my_form.csrfmiddlewaretoken.value
         },
         load: function(data) {
             var main_pane = dojo.byId("main_pane");
-            main_pane.innerHTML += data;
-            known_devices("joe blow")
+            console.log("SUCCESS: " + data.success);
+            if (data.success === true) {
+                dojo.byId('id_device_allowed').value = "True";
+            }
+            known_devices("joe blow");
         }
-    }
+    };
     var deferred = dojo.xhrPost(xhrArgs);
 }
 
-function edit_device_finish(device_name, my_form) {
-    var url = "/edit_device/" + device_name;
+function edit_device_finish(mac_address, my_form) {
+    var url = "/edit_device/" + mac_address;
     var xhrArgs = {
         url: url,
         form: my_form,
@@ -226,8 +253,8 @@ function edit_device_finish(device_name, my_form) {
         load: function(data) {
             var main_pane = dojo.byId("main_pane");
             main_pane.innerHTML += data;
-            known_devices("joe blow")
+            known_devices("joe blow");
         }
-    }
+    };
     var deferred = dojo.xhrPost(xhrArgs);
 }

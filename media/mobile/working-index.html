@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <!-- prevent cache -->
+        <meta http-equiv="cache-control" content="no-cache">
+        <meta http-equiv="pragma" content="no-cache">
+
+        <!-- Mobile tags -->
+        <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no"/>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-touch-fullscreen" content="yes" />
+        <meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" /> 
+
+        <title>Dad Runs the Internet</title>
+
+        <!-- The platform has been detected for us... -->
+        {% if platform == 'apple' %}
+            <link href="http://ajax.googleapis.com/ajax/libs/dojo/1.6/dojox/mobile/themes/iphone/iphone.css" rel="stylesheet"></link>
+        {% else %}
+            {% if platform == 'android' %}
+                <link href="http://ajax.googleapis.com/ajax/libs/dojo/1.6/dojox/mobile/themes/android/android.css" rel="stylesheet"></link>
+            {% endif %}
+        {% endif %}
+
+        <link href="media/js/drimobile/resources/DriMobile.css" rel="stylesheet" />
+        <script type="text/javascript">
+            djConfig = {
+                isDebug: true,
+                baseUrl: './',
+                modulePaths: {
+                    drimobile: 'media/js/drimobile'
+                },
+                parseOnLoad: true
+            };
+        </script>
+        <style>
+        /* vertically center the image */
+        .drimobileRefresh img   {
+            margin-top:6px;
+        }
+        </style>
+     
+        <!-- dojo/javascript will go here -->
+        <script src="http://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js"
+            djConfig="isDebug:true, parseOnLoad:true"></script> 
+        <script>
+            // Load the widget parser
+            dojo.require("dojox.mobile.parser");
+            // Load the base lib
+            dojo.require("dojox.mobile");
+
+            // Get additional, non-standard dojox.mobile widgets
+            dojo.require("dojox.mobile.ScrollableView");
+            dojo.require("dojox.mobile.TabBar"); // TabBarButton is included here
+         
+            {% if not mobile %} // If not a WebKit-based client, load compat
+            dojo.requireIf(!dojo.isWebKit, "dojox.mobile.compat");
+            {% endif %}
+			// Require DriMobileUI
+			dojo.require("drimobile.DriMobile"); 
+			dojo.require("drimobile.SettingsView"); 
+			// Set accounts for drimobile directly on the namespace
+			drimobile.ACCOUNTS = {
+				dojo: { enabled: true },
+				sitepen: { enabled: true }
+			};
+			
+			// Hack For This Demo!
+			dojo.ready(function() {
+				dijit.byId("tweets").refresh();
+				dijit.byId("mentions").refresh();
+			});
+    </script>
+    </head>
+    <body>
+ 
+<!-- tweets view -->
+<div id="tweets" dojoType="dojox.mobile.ScrollableView" selected="true">
+    <h1 dojoType="dojox.mobile.Heading">
+        <!-- the refresh button -->
+        <div dojoType="dojox.mobile.ToolBarButton" class="mblDomButton tweetviewRefresh" style="float:right;" icon="images/refresh.png"></div>
+        Tweets
+    </h1>
+    <ul dojoType="dojox.mobile.RoundRectList">
+        <li dojoType="dojox.mobile.ListItem">
+        Tweet item here
+        </li>
+    </ul>
+</div>
+ 
+<!-- mentions view -->
+<div id="mentions" dojoType="dojox.mobile.ScrollableView">
+    <h1 dojoType="dojox.mobile.Heading">
+        <!-- the refresh button -->
+        <div dojoType="dojox.mobile.ToolBarButton" class="mblDomButton tweetviewRefresh" style="float:right;" icon="images/refresh.png"></div>
+        Mentions
+    </h1>
+    <ul dojoType="dojox.mobile.RoundRectList">
+        <li dojoType="dojox.mobile.ListItem">
+        Mention tweet item here
+        </li>
+    </ul>
+</div>
+ 
+<!-- settings view -->
+<div id="settings" dojoType="dojox.mobile.ScrollableView">
+    <h1 dojoType="dojox.mobile.Heading">Settings</h1>
+    <h2 dojoType="dojox.mobile.RoundRectCategory">Show</h2>
+    <ul dojoType="dojox.mobile.RoundRectList">
+        <li dojoType="dojox.mobile.ListItem">
+        Setting item here
+        </li>
+    </ul>
+</div> 
+
+<!-- the bottom tabbar -->
+<ul dojoType="dojox.mobile.TabBar" iconBase="images/iconStrip.png" style="margin-top:-49px;">
+    <!-- All iconPos values specify: top left width height -->
+    <li dojoType="dojox.mobile.TabBarButton" iconPos1="0,0,29,30" iconPos2="29,0,29,30" selected="true" moveTo="tweets">Tweets</li>
+    <li dojoType="dojox.mobile.TabBarButton" iconPos1="0,29,29,30" iconPos2="29,29,29,30" moveTo="mentions">Mentions</li>
+    <li dojoType="dojox.mobile.TabBarButton" iconPos1="0,58,29,30" iconPos2="29,58,29,30" moveTo="settings">Settings</li>
+</ul>
+
+    </body>
+</html>

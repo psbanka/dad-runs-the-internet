@@ -1,8 +1,8 @@
-import unittest2
-from dri_server.web.frontend.views import _upload_process, iptables_download, enable_device
-from dri_server.web.frontend.models import Device, Policy, TemporaryApproval
+from django.utils import unittest
+
+from views import _upload_process, iptables_download, enable_device
+from models import Device, Policy, TemporaryApproval
 import json
-from nose.plugins.skip import SkipTest
 from mock import Mock
 
 
@@ -12,39 +12,49 @@ TEST_ARP_ENTRY = '? (192.168.11.149) at 7C:61:93:FD:FE:DA [ether] on br0\n'\
                  '? (192.168.11.110) at 58:55:CA:31:82:10 [ether] on br0\n'\
                  '? (192.168.11.109) at 58:94:6B:A4:DA:BC [ether] on br0'
 
-class TestUpload(unittest2.TestCase):
+class TestUpload(unittest.TestCase):
     """ Class used by all TNT test cases to test TNT. Not production code """
 
+    fixtures = ['initial_data']
+
     def setUp(self):
-        "Override base class method"
-        pass
+        self.full = Policy.objects.get(name = "full")
+        self.blocked = Policy.objects.get(name = 'blocked')
+        self.device_1 = Device(mac_address="58:94:6b:a4:da:bc", ip_address="192.168.10.2")
+        self.device_1.policy = self.full
+        self.device_1.save()
+        self.device_2 = Device(mac_address="48:5b:39:f8:5d:f9", ip_address="192.168.10.3")
+        self.device_2.policy = self.full
+        self.device_2.save()
+        self.device_3 = Device(mac_address="58:94:6b:a4:d7:bc", ip_address="192.168.10.4")
+        self.device_3.policy = self.blocked
+        self.device_3.save()
+        self.device_4 = Device(mac_address="48:57:39:78:5d:f9", ip_address="192.168.10.5")
+        self.device_4.policy = self.blocked
+        self.device_4.save()
 
     def tearDown(self):
-        "Override base class method"
-        pass
+        self.device_1.delete()
+        self.device_2.delete()
+        self.device_3.delete()
+        self.device_4.delete()
 
     def test_upload_process(self):
-        raise SkipTest # need more reliable way to set up fixtures
         self.assertEqual(len(Device.objects.all()), 4)
         _upload_process(TEST_ARP_ENTRY)
         self.assertEqual(len(Device.objects.all()), 9)
 
     def test_download_process(self):
-        raise SkipTest # need more reliable way to set up fixtures
-        device_1 = Device.objects.get(mac_address="58:94:6b:a4:da:bc")
-        device_2 = Device.objects.get(mac_address="48:5b:39:f8:5d:f9")
-        device_3 = Device.objects.get(mac_address="58:94:6b:a4:d7:bc")
-        device_4 = Device.objects.get(mac_address="48:57:39:78:5d:f9")
         full = Policy.objects.get(name = "full")
         blocked = Policy.objects.get(name = 'blocked')
-        device_1.policy = full
-        device_1.save()
-        device_2.policy = full
-        device_2.save()
-        device_3.policy = blocked
-        device_3.save()
-        device_4.policy = blocked
-        device_4.save()
+        self.device_1.policy = full
+        self.device_1.save()
+        self.device_2.policy = full
+        self.device_2.save()
+        self.device_3.policy = blocked
+        self.device_3.save()
+        self.device_4.policy = blocked
+        self.device_4.save()
         response = iptables_download({})
         response_dict = json.loads(response._get_content()[5:])
         allowed_expected = [
@@ -64,32 +74,33 @@ class TestUpload(unittest2.TestCase):
         full = Policy.objects.get(name = "full")
         upon_request = Policy.objects.get(name = 'upon-request')
 
-        device_1 = Device.objects.get(mac_address="58:94:6b:a4:da:bc")
-        device_1.policy = full
-        device_1.save()
+        self.device_1.policy = full
+        self.device_1.save()
 
-        self.assertTrue(device_1.is_allowed()) 
+        self.assertTrue(self.device_1.is_allowed()) 
 
         # Test out partial unblocking
-        device_1.policy = upon_request
-        device_1.save()
+        self.device_1.policy = upon_request
+        self.device_1.save()
 
-        self.assertFalse(device_1.is_allowed()) 
+        self.assertFalse(self.device_1.is_allowed()) 
 
         # Create an approval, and see that the device is enabled
-        ta = TemporaryApproval(device=device_1)
+        ta = TemporaryApproval(device=self.device_1)
         ta.set_parameters(10)
         ta.save()
 
-        self.assertTrue(device_1.is_allowed()) 
+        self.assertTrue(self.device_1.is_allowed()) 
 
     def test_enable_device(self):
-        raise SkipTest # need more reliable way to set up fixtures
         response = iptables_download({})
         response_dict = json.loads(response._get_content()[5:])
 
-        expected_blocked = {"mac_address": "58:94:6b:a4:da:bc", "ip_address": "192.168.10.2"}
-        self.assertIn(expected_blocked, response_dict['blocked'])
+        expected_blocked = [{u'ip_address': u'192.168.10.4',
+               u'mac_address': u'58:94:6b:a4:d7:bc'},
+              {u'ip_address': u'192.168.10.5',
+               u'mac_address': u'48:57:39:78:5d:f9'}]
+        self.assertEqual(expected_blocked, response_dict['blocked'])
 
         request = Mock()
         request.POST = { "device_name": '58:94:6b:a4:da:bc', "duration": 30 }

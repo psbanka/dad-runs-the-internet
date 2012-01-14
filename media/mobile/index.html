@@ -1,0 +1,76 @@
+{% extends "dojango/base.html" %}
+
+{% block dojango_page_title %}Dad Runs the Internet{% endblock %}
+
+{% block dojango_post_dj_config %}
+    <script>
+        djConfig = {
+            isDebug: true,
+            modulePaths: {
+                drimobile: 'media/js/drimobile'
+            },
+            parseOnLoad: true
+        };
+    </script>
+{% endblock %}
+
+{% block dojango_header_extra %}
+    <script type="text/javascript">
+        window.__globalList = {dojo: true, dijit: true, dojox: true, djConfig: true};
+        for(var i in window){
+            window.__globalList[i] = true;
+        }
+    </script>
+
+		<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no"/>
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-touch-fullscreen" content="yes" />
+		<meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" /> 
+		
+		<!-- prevent cache -->
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="pragma" content="no-cache">
+		
+		<link href="media/js/drimobile/resources/DriMobile.css" rel="stylesheet" />
+		<script type="text/javascript">
+		</script>
+		<!-- <script type="text/javascript" src="media/js/drimobile/DriMobile.js"></script> -->
+		<script type="text/javascript">
+			// Use the lightweight parser
+			dojo.require("dojox.mobile.parser");
+			// Require Dojo mobile
+			dojo.require("dojox.mobile");
+			// Require the compat if the client isn't Webkit-based
+			dojo.requireIf(!dojo.isWebKit,"dojox.mobile.compat");
+			// Require DriMobileUI
+			dojo.require("drimobile.DriMobile"); 
+			// Set accounts for drimobile directly on the namespace
+			drimobile.ACCOUNTS = {
+				dojo: { enabled: true },
+				sitepen: { enabled: true }
+			};
+			
+			// Hack For This Demo!
+			dojo.ready(function() {
+				dijit.byId("devices").refresh();
+			});
+			
+		</script>
+{% endblock %}
+
+{% block dojango_body %}
+	<body>
+		
+		<!-- devices view -->
+		<div id="devices" dojoType="drimobile.DriMobile" selected="true">
+			<h1 dojoType="dojox.mobile.Heading" fixed="top">
+				<!-- the refresh button -->
+				<div dojoType="dojox.mobile.ToolBarButton" class="mblDomButton drimobileRefresh" icon="media/js/drimobile/resources/images/refresh.png"></div>
+				Devices
+			</h1>
+			<ul dojoType="dojox.mobile.RoundRectList" class="drimobileList"></ul>
+		</div>
+
+	</body>
+</html>
+{% endblock %}
