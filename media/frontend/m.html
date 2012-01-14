@@ -1,27 +1,6 @@
-{% extends "dojango/base.html" %}
-
-{% block dojango_page_title %}Dad Runs the Internet{% endblock %}
-
-{% block dojango_post_dj_config %}
-    <script>
-        djConfig = {
-            isDebug: true,
-            modulePaths: {
-                drimobile: 'media/js/drimobile'
-            },
-            parseOnLoad: true
-        };
-    </script>
-{% endblock %}
-
-{% block dojango_header_extra %}
-    <script type="text/javascript">
-        window.__globalList = {dojo: true, dijit: true, dojox: true, djConfig: true};
-        for(var i in window){
-            window.__globalList[i] = true;
-        }
-    </script>
-
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
 		<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no"/>
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-touch-fullscreen" content="yes" />
@@ -31,9 +10,20 @@
 		<meta http-equiv="cache-control" content="no-cache">
 		<meta http-equiv="pragma" content="no-cache">
 		
+		<title>DriMobile</title>
+		<link href="http://ajax.googleapis.com/ajax/libs/dojo/1.6/dojox/mobile/themes/iphone/iphone.css" rel="stylesheet" />
 		<link href="media/js/drimobile/resources/DriMobile.css" rel="stylesheet" />
 		<script type="text/javascript">
+			djConfig = {
+				isDebug: true,
+				baseUrl: './',
+				modulePaths: {
+					drimobile: 'media/js/drimobile'
+				},
+				parseOnLoad: true
+			};
 		</script>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.6/dojo/dojo.xd.js.uncompressed.js"></script>
 		<!-- <script type="text/javascript" src="media/js/drimobile/DriMobile.js"></script> -->
 		<script type="text/javascript">
 			// Use the lightweight parser
@@ -53,18 +43,31 @@
 			// Hack For This Demo!
 			dojo.ready(function() {
 				dijit.byId("devices").refresh();
-			});
+			});			
 			
 		</script>
-{% endblock %}
-
-{% block dojango_body %}
+	</head>
 	<body>
-		
+
+        <!--
+		 login view -->
+        <div id="login_page" dojoType="dojox.mobile.ScrollableView" selected="true">
+            <h1 dojoType="dojox.mobile.Heading">
+                <div dojoType="dojox.mobile.ToolBarButton" id="login_button" label="Submit" class="mblDomButton drimobileLogin"></div>
+                Log in to DRI
+            </h1>
+            <form method="POST" id="login_form">
+            <ul dojoType="dojox.mobile.RoundRectList" id="login_rect">
+                  <li><input name='username' data-dojo-type="dojox.mobile.TextBox" placeHolder="Username" /></li>
+                  <li><input name='password' data-dojo-type="dojox.mobile.TextBox" placeHolder="Password" /></li>
+                  {% csrf_token %}
+            </ul>
+            </form>
+            <div id="login_message"></div>
+        </div>
 		<!-- devices view -->
-		<div id="devices" dojoType="drimobile.DriMobile" selected="true">
-			<h1 dojoType="dojox.mobile.Heading" fixed="top">
-				<!-- the refresh button -->
+		<div id="devices" dojoType="drimobile.DriMobile">
+			<h1 dojoType="dojox.mobile.Heading" fixed="top" back="Login" moveTo="login_page">
 				<div dojoType="dojox.mobile.ToolBarButton" class="mblDomButton drimobileRefresh" icon="media/js/drimobile/resources/images/refresh.png"></div>
 				Devices
 			</h1>
@@ -73,4 +76,3 @@
 
 	</body>
 </html>
-{% endblock %}

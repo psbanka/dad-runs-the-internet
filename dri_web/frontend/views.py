@@ -127,7 +127,7 @@ def iptables_download(request):
         response[section_name].append(new_entry)
     return response
 
-#@login_required
+@login_required
 @json_response
 def known_devices(request):
     """

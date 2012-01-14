@@ -1,0 +1,10 @@
+<div id="Login" data-dojo-type="dojox.mobile.Opener">
+      <h1 data-dojo-type="dojox.mobile.Heading" label="Login">
+              <div data-dojo-type="dojox.mobile.ToolBarButton" label="Done" class="mblColorBlue" style="width:45px;float:right;" onClick="dijit.registry.byId('Login').hide()"></div>
+      </h1>
+      <form method="POST" id="login_form" dojoType="dijit.form.Form">
+      <input name='username' data-dojo-type="dojox.mobile.TextBox" placeHolder="Username" />
+      <input name='password' data-dojo-type="dojox.mobile.TextBox" placeHolder="Password" />
+      {% csrf_token %}
+      </form>
+</div>

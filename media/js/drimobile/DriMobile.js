@@ -3,10 +3,8 @@ dojo.provide("drimobile.DriMobile");
 dojo.require("drimobile._ViewMixin");
 dojo.require("dojox.mobile.ScrollableView");
 
-// Declare the class;  inherits from ScrollableView
 dojo.declare("drimobile.DriMobile", [dojox.mobile.ScrollableView, drimobile._ViewMixin], {
 	
-	// Create a template string for devices:
 	deviceTemplateString: //'<img src="${avatar}" alt="${name}" class="drimobileAvatar" />' + 
 	'<div class="drimobileContent"> ' +
 		'<div class="drimobileUser">${device_name}</div>' + 
@@ -16,28 +14,70 @@ dojo.declare("drimobile.DriMobile", [dojox.mobile.ScrollableView, drimobile._Vie
 	iconLoading: "media/js/drimobile/resources/images/loading.gif",
 	// iconLoading: "js/drimobile/resources/images/androidLoading.gif"
 	
+    loginButton: null,
+
 	startup: function() {
 		this.inherited(arguments);
 		this.refreshButton = dijit.byId(this.getElements("drimobileRefresh", this.domNode)[0].id);
 		this.iconImage = this.refreshButton.iconNode.src;
 		dojo.connect(this.refreshButton, "onClick", this, "refresh");
+
+		this.loginButton = dijit.byId("login_button");
+		dojo.connect(this.loginButton, "onClick", this, function() {
+            console.log("Login was pressed");
+            var form = dojo.byId("login_form");
+            this.login(form);
+        });
+
 		dojo.addClass(this.domNode, "drimobilePane");
 		this.listNode = this.getListNode();
 		
 		// Hide the list because it's not populated with list items yet
 		this.showListNode(false);
 		
-		// Every 60 seconds, update the times
+		// Every 60 seconds, update the stuff
 		setInterval(dojo.hitch(this, function() {
-			//dojo.query(".drimobileTime",this.domNode).forEach(function(timeNode) {
-            /*
-			dojo.forEach(this.getElements("drimobileTime",this.domNode), function(timeNode) {
-				timeNode.innerHTML = "time";
-			},this);
-            */
+            this.update_switches();
 		}),60000);
 		
 	},
+
+    login: function(my_form) {
+        var url = "/authenticate/";
+        var xhrArgs = {
+            url: url,
+            handleAs: "json",
+            username: my_form.username.value,
+            content:{username: my_form.username.value,
+                     password: my_form.password.value,
+                     csrfmiddlewaretoken: my_form.csrfmiddlewaretoken.value
+            },
+            load: function(data) {
+                console.log("LOADING LOGIN DATA...");
+                if (!data.success) {
+                    console.log('FAILURE');
+                    dojo.byId("login_message").innerHTML = data.message;
+                } else {
+                    console.log('SUCCESS');
+                    dojo.byId("login_message").innerHTML = data.message;
+                    var devices_page = dijit.byId("devices");
+                    devices_page.show();
+                }
+            }
+        };
+        console.log("Performing login...");
+        console.log("username:" + my_form.username);
+        console.log("password:" + my_form.password);
+        console.log("csrf:" + my_form.csrfmiddlewaretoken.value);
+         
+        var deferred = dojo.xhrPost(xhrArgs);
+    },
+
+    update_switches: function() {
+        dojo.query(".drimobileSwitch",this.domNode).forEach(function(switchNode) {
+            console.log(">> ID: " + switchNode.id);
+        });
+    },
 
 	refresh: function() {
         var xhrArgs = {

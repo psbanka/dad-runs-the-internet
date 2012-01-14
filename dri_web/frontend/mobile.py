@@ -35,6 +35,6 @@ def index(request):
         model['username'] = request.user.username
     else:
         model['username'] = '__ANONYMOUS'
-    return render_to_response("mobile/index.html", model,
+    return render_to_response("frontend/m.html", model,
         context_instance=RequestContext(request))
 

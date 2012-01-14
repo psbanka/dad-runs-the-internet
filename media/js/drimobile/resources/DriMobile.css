@@ -8,6 +8,10 @@
 	margin-top:6px;
 }
 
+.drimobileLogin {
+	float:right;
+}
+
 /* drimobile pane */
 .mblScrollableViewContainer {
 	padding-bottom:40px !important;
