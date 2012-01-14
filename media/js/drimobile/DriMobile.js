@@ -39,31 +39,6 @@ dojo.declare("drimobile.DriMobile", [dojox.mobile.ScrollableView, drimobile._Vie
 		
 	},
 
-    switch_device: function(new_state, mac_address, csrf_token) {
-        var url = "/enable_device/";
-        var xhrArgs = {
-            url: url,
-            handleAs:"json",
-            content:{mac_address: mac_address,
-                     duration: 30,
-                     csrfmiddlewaretoken: csrf_token
-            },
-            load: function(data) {
-                for (variable in data) {
-                    console.log(">> " + variable + ': ' + data[variable]);
-                }
-                console.log('mac_address in load: (' + mac_address + ')');
-            },
-            error: function(data) {
-                console.log("ERROR:" + data);
-            }
-        };
-        var deferred = dojo.xhrPost(xhrArgs);
-        var isOn = new_state == "on";
-        console.log("new_state:" + new_state);
-        console.log("mac_address: " + mac_address);
-    },
-
 	refresh: function() {
         var xhrArgs = {
             url: '/known_devices/',
@@ -86,36 +61,75 @@ dojo.declare("drimobile.DriMobile", [dojox.mobile.ScrollableView, drimobile._Vie
                             policy_name = device.policy.name;
                         }
                     
-                        if (policy_name === 'upon-request') {
-                            var item = new dojox.mobile.ListItem({
-                                "class": "drimobileListItem user-" + 'fred'
-                            }).placeAt(this.listNode,"first");
-                            
-                            item.containerNode.innerHTML = this.substitute(this.deviceTemplateString, {
-                                mac_address: mac_address,
-                                device_name: device.name || mac_address,
-                                name: 'device-name',
-                                avatar: 'picture-url',
-                                time: device.is_allowed,
-                                created_at: 'create-at',
-                                id: 'main_container'
-                            });
+                        var switch_value = 'off';
+                        if (device.is_allowed === true) {
+                            switch_value = "on";
+                        }
+                        var userSwitch;
 
-                            var switch_value = 'off';
-                            if (device.is_allowed === true) {
-                                switch_value = "on";
+                        if (policy_name === 'upon-request') {
+                            var list_item = dijit.byId(mac_address + '_list_item');
+                            if (list_item === undefined) {
+                                // Create a new switch...
+                                list_item = new dojox.mobile.ListItem({
+                                    "class": "drimobileListItem user-" + 'fred',
+                                    "id": mac_address + "_list_item"
+                                }).placeAt(this.listNode,"first");
+                                
+                                list_item.containerNode.innerHTML = this.substitute(this.deviceTemplateString, {
+                                    mac_address: mac_address,
+                                    device_name: device.name || mac_address,
+                                    name: 'device-name',
+                                    avatar: 'picture-url',
+                                    time: device.is_allowed,
+                                    created_at: 'create-at',
+                                    id: 'main_container'
+                                });
+
+                                userSwitch = new dojox.mobile.Switch({
+                                    "class": "drimobileSwitch",
+                                    id: mac_address + "_switch",
+                                    value: switch_value,
+                                    name: mac_address
+                                }).placeAt(list_item.containerNode, "first");
+                            } else {
+                                // Else, just set the value
+                                userSwitch = dijit.byId(mac_address + "_switch");
+                                userSwitch.set("value", switch_value);
                             }
 
-                            var userSwitch = new dojox.mobile.Switch({
-                                "class": "drimobileSwitch",
-                                id: mac_address + "_switch",
-                                value: switch_value,
-                                name: mac_address
-                            }).placeAt(item.containerNode, "first");
-
                             // Add change event to the switch
-                            dojo.connect(userSwitch, "onStateChanged", this, function(new_state) {
-                                this.switch_device(new_state, mac_address, csrf_token);
+                            dojo.connect(userSwitch, "onStateChanged", mac_address, function(new_state) {
+                                console.log(new_state);
+                                console.log(this);
+
+                                var url = "/enable_device/";
+                                var xhrArgs = {
+                                    url: url,
+                                    handleAs:"json",
+                                    content:{mac_address: this,
+                                             duration: 30,
+                                             csrfmiddlewaretoken: csrf_token
+                                    },
+                                    load: function(data) {
+                                        for (variable in data) {
+                                            console.log(">> " + variable + ': ' + data[variable]);
+                                        }
+                                        console.log('mac_address in load: (' + data.success + ')');
+                                    },
+                                    error: function(data) {
+                                        console.log("ERROR:" + data);
+                                        if (new_state == 'on') {
+                                            userSwitch = dijit.byId(this + "_switch");
+                                            userSwitch.set("value", switch_value);
+                                        }
+                                    }
+                                };
+                                var deferred = dojo.xhrPost(xhrArgs);
+                                var isOn = new_state == "on";
+                                console.log("new_state:" + new_state);
+                                console.log("mac_address: " + this);
+
                             });
                         }
                     }
@@ -136,11 +150,11 @@ dojo.declare("drimobile.DriMobile", [dojox.mobile.ScrollableView, drimobile._Vie
 	},
 
     load: function() {
-        var item = new dojox.mobile.ListItem({
+        var list_item = new dojox.mobile.ListItem({
             "class": "drimobileListItem user-" + 'fred'
         }).placeAt(this.listNode,"first");
         
-        item.containerNode.innerHTML = this.substitute(this.deviceTemplateString, {
+        list_item.containerNode.innerHTML = this.substitute(this.deviceTemplateString, {
             mac_address: "hello",
             device_name: 'screen-name',
             name: 'device-name',

@@ -161,7 +161,7 @@ def enable_device(request):
         return output
     mac_address = request.POST.get("mac_address")
     provided_duration = request.POST.get("duration", "30")
-    logger.info("IN ENABLE-DEVICES")
+    logger.info("IN ENABLE-DEVICES: %s" % mac_address)
     try:
         duration = int(provided_duration)
         device = None
