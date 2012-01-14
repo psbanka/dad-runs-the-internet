@@ -3,6 +3,7 @@ import time
 import sys
 from downloader import Downloader
 from uploader import upload_arp_table
+from util import log_open_files
 
 from Exceptions import DownloadException, UploadException, CommandException
 
@@ -27,10 +28,12 @@ class DriDaemon:
                     sys.exit(0)
             try:
                 self.downloader.run()
+                log_open_files("downloader")
             except (DownloadException, CommandException):
                 syslog.syslog('Help! Downloading')
             try:
                 upload_arp_table()
+                log_open_files("uploader")
             except (UploadException, CommandException):
                 syslog.syslog('Help! Uploading')
             syslog.syslog(syslog.LOG_INFO, "I LIVE")

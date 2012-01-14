@@ -8,7 +8,8 @@ import optparse
 from pprint import pprint
 import syslog
 
-URL = "http://falling-stone-8827.herokuapp.com//iptables_download/"
+#URL = "http://falling-stone-8827.herokuapp.com//iptables_download/"
+URL = "http://freezing-frost-9935.herokuapp.com/iptables_download/"
 IPTABLES_TARGET = "grp_1"
 
 def verify_ip(mac_address, ip_address):

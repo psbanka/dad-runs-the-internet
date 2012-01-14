@@ -1,5 +1,6 @@
 #!/opt/bin/python2.7
 
+import os
 import re
 from commands import getstatusoutput as gso
 import syslog
@@ -8,7 +9,8 @@ from util import run_or_die, OK, FAIL
 from Exceptions import UploadException
 
 TEST_FILE = '/etc/passwd'
-URL = "http://falling-stone-8827.herokuapp.com//arp_upload/"
+#URL = "http://falling-stone-8827.herokuapp.com//arp_upload/"
+URL = "http://freezing-frost-9935.herokuapp.com/arp_upload/"
 
 def grab_csrf():
     cmd = "curl -c /tmp/cookies.txt %s 2>/dev/null" % URL
@@ -33,12 +35,14 @@ def upload(filename):
 
 def upload_arp_table():
     arp_data = run_or_die('arp -an')
-    fh, file_name = tempfile.mkstemp(prefix="arp_")
+    fd, file_name = tempfile.mkstemp(prefix="arp_")
     open(file_name, 'w').write(arp_data)
     output = upload(file_name)
     if output == OK:
         gso('rm -f %s' % file_name)
+        os.close(fd)
         return OK
+    os.close(fd)
     syslog.syslog(syslog.LOG_ERR, "Error uploading")
     raise UploadException(URL, output)
 
