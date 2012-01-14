@@ -1,11 +1,16 @@
 {% extends "dojango/base.html" %}
 {% block dojango_content %}
-    <h1>Device: {{ device_name }}</h1>
-    <hr class="spacer">
-    <form method="POST" id="form_{{device_name}}" dojoType="dijit.form.Form">
-        <table>
-            {{ form.as_table }}
-        </table>
-        {% csrf_token %}
-    </form>
+
+    <div dojoType="dijit.TitlePane" region="center" title="{{ device_name }}" id='edit_pane'>
+
+        <hr class="spacer">
+        <form method="POST" id="form_{{mac_address}}" dojoType="dijit.form.Form">
+            <table>
+                {{ form.as_table }}
+            </table>
+            {% csrf_token %}
+        </form>
+
+    </div><!-- end outer title pane -->
+
 {% endblock %}

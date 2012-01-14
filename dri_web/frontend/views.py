@@ -143,14 +143,8 @@ def known_devices(request):
                                       'policy': record.policy,
                                       'is_allowed': record.is_allowed(),
                                      }
+    output['csrf'] = csrf(request)
     return output
-
-def _get_device_from_name_or_mac(device_name):
-    try:
-        device = Device.objects.get(mac_address=device_name)
-    except Exception: # FIXME catch DoesNotExist
-        device = Device.objects.get(name=device_name)
-    return device
 
 @login_required
 @json_response
@@ -165,53 +159,61 @@ def enable_device(request):
         output['success'] = False
         output["message"] = "Must use a POST"
         return output
-    device_name = request.POST.get("device_name")
+    mac_address = request.POST.get("mac_address")
     provided_duration = request.POST.get("duration", "30")
+    logger.info("IN ENABLE-DEVICES")
     try:
         duration = int(provided_duration)
         device = None
+        logger.info("Duration: %s" % duration)
         try:
-            device = _get_device_from_name_or_mac(device_name)
+            device = Device.objects.get(mac_address=mac_address)
+            logger.info("device found. Device name: %s" % device.name)
         except Exception: # FIXME catch DoesNotExist
-            return HttpResponse("can't look that record up: (%s)" % device_name)
+            return {"success": False,
+                    "message": "can't look that record up: (%s)" % mac_address
+                   }
         temporary_approval = TemporaryApproval()
         temporary_approval.device = device
         temporary_approval.set_parameters(duration)
         temporary_approval.save()
         output['message'] = "Saved"
+        logger.info("Saving approval")
     except ValueError:
         msg = "Bad duration provided: (%s)" % provided_duration
         logger.info(msg)
         output["success"] = False
         output['message'] = msg
     except Exception: # FIXME (does not exist)
-        msg = "Bad device name provided: (%s)" % request.POST.get("device_name")
+        msg = "Bad device name provided: (%s)" % request.POST.get("mac_address")
         logger.info(msg)
         output["success"] = False
         output['message'] = msg
+    log_object(output, "MY OUTPUT")
     return output
 
 @login_required
-def edit_device(request, device_name):
+def edit_device(request, mac_address):
     """
     The user has been shown a list of devices on his network. He wants
     to edit one: give it a name, assign it a policy, whatever.
     """
     logger = logging.getLogger('dri.custom')
+    device_name = "Unknown"
     if request.method == 'POST':
         form = DeviceForm(request.POST)
         log_object(request.POST)
         if not form.errors:
-            submitted_mac = request.POST.get("mac_address")
             submitted_policy = request.POST.get('policy')
             submitted_device_type = request.POST.get('device_type')
+            submitted_device_name = request.POST.get('device_name')
             try:
-                device = Device.objects.get(mac_address=submitted_mac)
+                device = Device.objects.get(mac_address=mac_address)
             except Exception: # FIXME: catch DoesNotExist
                 logger.info("NO object! Bailing out!")
-                return HttpResponse("Name: (%s) does not exist in the database." % submitted_mac)
+                return HttpResponse("Name: (%s) does not exist in the database." % mac_address)
 
-            device.name = request.POST.get('device_name')
+            device.name = submitted_device_name
             try:
                 policy = Policy.objects.get(name=submitted_policy)
                 device.policy = policy
@@ -230,7 +232,7 @@ def edit_device(request, device_name):
             return HttpResponse("<h1>SAVED</h1>")
     else:
         try:
-            device = _get_device_from_name_or_mac(device_name)
+            device = Device.objects.get(mac_address=mac_address)
             policy = None if not device.policy else device.policy.name
             device_type = None if not device.device_type else device.device_type.name
             form = DeviceForm(initial={"device_name": device.name,
@@ -238,9 +240,14 @@ def edit_device(request, device_name):
                                        "device_type": device_type,
                                        "device_allowed": str(device.is_allowed()),
                                        "policy"     : policy})
+            device_name = device.name
         except Exception: # FIXME catch DoesNotExist
-            return HttpResponse("can't look that record up: (%s)" % device_name)
+            return HttpResponse("can't look that record up: (%s)" % mac_address)
 
-    model = {"form": form, "device_name": device_name}
+    model = {"form": form, "device_name": device_name, "mac_address": mac_address}
     model.update(csrf(request))
     return render_to_response("frontend/edit_device_form.html", model)
+
+
+
+
