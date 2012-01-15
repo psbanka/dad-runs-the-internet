@@ -5,13 +5,14 @@ from downloader import Downloader
 from uploader import upload_arp_table
 from policy_mgr import DnsCacheMon
 from util import log_open_files
+import json
 
 from Exceptions import DownloadException, UploadException
 from Exceptions import CommandException, PolicyMgrException
 
 MAX_LOOPS = 0
 INTER_LOOP_SLEEP = 10
-ALLOWED_NAMES = [".*google\.com", ".*amazonaws\.com", "freezing\-frost\-9935\.herokuapp\.com", "ssl\.gstatic\.com"
+ALLOWED_NAMES = [".*google\.com", ".*amazonaws\.com", "freezing\-frost\-9935\.herokuapp\.com","ssl\.gstatic\.com"
                  "lastpass\.com", "ar\.herokuapp\.com", "pbanka\.atlassian\.net", "ajax\.googleapis\.com", "accounts\.youtube\.com"]
 
 class DriDaemon:
