@@ -22,6 +22,12 @@ class UploadException(DriException):
     def __repr__(self):
         return "UploadException"
 
+class PolicyMgrException(DriException):
+    def __init__(self, output):
+        self.output = output
+    def __repr__(self):
+        return "PolicyMgrException"
+
 class CommandException(DriException):
     def __init__(self, cmd, output):
         self.cmd = cmd

@@ -1,6 +1,7 @@
 #!/opt/bin/python2.7
 
 from util import run_or_die, OK, FAIL
+import policy_mgr
 from commands import getstatusoutput as gso
 from Exceptions import DownloadException
 import json
@@ -32,7 +33,7 @@ def make_rules(configs):
     for allowed_record in configs['blocked']:
         mac_address = allowed_record["mac_address"]
         ip_address = allowed_record["ip_address"]
-        cmd = "iptables -I %s -s %s -j REJECT" % (IPTABLES_TARGET, ip_address)
+        cmd = "iptables -I %s -s %s -j %s" % (IPTABLES_TARGET, ip_address, policy_mgr.IPTABLES_TARGET)
         cmds.append(cmd)
     return cmds
 
