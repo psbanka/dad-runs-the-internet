@@ -42,19 +42,19 @@ class Daemonizer:
     "Runs the dri service(s)"
 
     def __init__(self, options):
-        self.opts = options
-        self.pid_file = os.path.join(self.opts.pid_dir, PID_FILE)
+        self.options = options
+        self.pid_file = os.path.join(self.options.pid_dir, PID_FILE)
+        self.daemon = DriDaemon(options)
 
     def main_process_loop(self):
         "This runs the dispatcher process"
 
-        daemon = DriDaemon()
         pid = str(os.getpid())
         try:
             open(self.pid_file, 'w').write( "%s\n" % pid )
         except:
-            daemon.terminate("not_root")
-        daemon.main_loop()
+            self.daemon.terminate("not_root")
+        self.daemon.main_loop()
 
     def refork(self):
         "Inner fork, sets up Dispatcher"
@@ -73,6 +73,9 @@ class Daemonizer:
     def start(self):
         "Create a deamon process"
 
+        if self.options.no_daemonize:
+            self.daemon.main_loop()
+            sys.exit(0)
         if os.path.isfile(self.pid_file):
             print "Cannot start: (%s) already exists" % self.pid_file
             trace_exit(1)
@@ -104,6 +107,10 @@ class Daemonizer:
 
 def main():
     parser = optparse.OptionParser("usage: %prog")
+    parser.add_option("-t", "--test", dest="test", action="store_const", const=True,
+                      help="Test only (do not make any changes to the system)")
+    parser.add_option("-d", "--no-daemon", dest="no_daemonize", action="store_const", const=True,
+                      help="Do not daemonize (debug mode)")
     parser.add_option("-v", "--verbose", dest="verbose", action="store_const", const=True,
                       help="Turn on debugging")
     parser.add_option("-p", "--pid_dir", dest="pid_dir",
