@@ -1,17 +1,17 @@
 #!/opt/bin/python2.7
 
 from util import run_or_die, OK, FAIL
-import policy_mgr
+import PolicyMgr
 from commands import getstatusoutput as gso
 from Exceptions import DownloadException
 import json
 import optparse
 from pprint import pprint
-import syslog
+from DaemonBase import DaemonBase
 
 #URL = "http://falling-stone-8827.herokuapp.com//iptables_download/"
 URL = "http://freezing-frost-9935.herokuapp.com/iptables_download/"
-IPTABLES_TARGET = "grp_1"
+IPTABLES_TARGET = "grp_2"
 
 def verify_ip(mac_address, ip_address):
     """
@@ -33,15 +33,14 @@ def make_rules(configs):
     for allowed_record in configs['blocked']:
         mac_address = allowed_record["mac_address"]
         ip_address = allowed_record["ip_address"]
-        cmd = "iptables -I %s -s %s -j %s" % (IPTABLES_TARGET, ip_address, policy_mgr.IPTABLES_TARGET)
+        cmd = "iptables -I %s -s %s -j %s" % (IPTABLES_TARGET, ip_address, PolicyMgr.IPTABLES_TARGET)
         cmds.append(cmd)
     return cmds
 
-class Downloader:
+class Downloader(DaemonBase):
 
-    def __init__(self, test = False, verbose = False):
-        self.test = test
-        self.verbose = verbose
+    def __init__(self, options):
+        DaemonBase.__init__(self, options)
 
     def run(self):
         "Perform all necessary actions"
@@ -64,8 +63,8 @@ class Downloader:
             configs.update(json.loads(line))
 
         if not configs.get('success', False):
-            syslog.syslog("Error loading configs")
-            if self.verbose:
+            sys.log("Error loading configs")
+            if self.options.verbose:
                 print "Output from the server:"
                 pprint(curl_output)
             raise DownloadException(URL, curl_output)
@@ -73,18 +72,18 @@ class Downloader:
 
     def implement_rules(self, cmds):
         "Actually run the rules that we put together"
-        if self.test:
+        if self.options.test:
             print "This script would implement the following rules:"
             for cmd in cmds:
                 print "   %s" % cmd
         else:
             for cmd in cmds:
-                if self.verbose: syslog.syslog("Running: [%s]..." % cmd,)
+                if self.options.verbose: sys.log("Running: [%s]..." % cmd)
                 status, output = gso(cmd)
                 if status != OK:
-                    syslog.syslog(syslog.LOG_ERR, "COMMAND FAILED: [%s]" % cmd)
+                    sys.log("COMMAND FAILED: [%s]" % cmd)
                     raise DownloadException(URL, output)
-                if self.verbose: print "SUCCESS"
+                if self.options.verbose: print "SUCCESS"
 
 def main():
     parser = optparse.OptionParser("usage: %prog")
@@ -93,7 +92,7 @@ def main():
     parser.add_option("-v", "--verbose", dest="verbose", action="store_const", const=True,
                       help="Turn on debugging")
     (options, actions) = parser.parse_args()
-    downloader = Downloader(options.test, options.verbose)
+    downloader = Downloader(options)
     downloader.run()
 
 if __name__ == "__main__":

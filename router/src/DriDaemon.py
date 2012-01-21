@@ -1,9 +1,9 @@
-import syslog
 import time
 import sys
+import os
 from downloader import Downloader
-from uploader import upload_arp_table
-from policy_mgr import DnsCacheMon
+from uploader import Uploader
+from PolicyMgr import PolicyMgr
 from util import log_open_files
 import json
 from DaemonBase import DaemonBase
@@ -13,46 +13,49 @@ from Exceptions import CommandException, PolicyMgrException
 
 MAX_LOOPS = 0
 INTER_LOOP_SLEEP = 10
-ALLOWED_NAMES = [
-".*.nist.gov",
-".*.google.com",
-".*amazonaws.com",
-"freezing-frost-9935.herokuapp.com",
-"ssl.gstatic.com",
-".*.lastpass.com",
-"ar.herokuapp.com",
-".*.atlassian.net",
-".*.googleapis.com",
-".*.pool.ntp.org",
-".*.accuweather.com",
-".*.dictionary.com",
-".*.evernote.com",
-".*gpsonextra.net",
-".*.feedburner.net",
-".*.wikipedia.org",
-]
+ALLOWED_NAMES = {
+"time": [".*.nist.gov", ".*.pool.ntp.org",],
+"google": [".*.google.com", "ssl.gstatic.com",],
+"dri": [ ".*amazonaws.com", "freezing-frost-9935.herokuapp.com", "ar.herokuapp.com", ".*.googleapis.com",],
+"lastpass": [".*.lastpass.com",],
+"dev": [".*.atlassian.net",],
+"weather": [ ".*.accuweather.com",],
+"learning": [".*.dictionary.com", ".*.wikipedia.org",],
+"evernote": [".*.evernote.com",],
+"mapping": [".*gpsonextra.net",],
+"podcasts": [".*.feedburner.net",],
+}
 
 class DriDaemon(DaemonBase):
+
+    """
+    Manages all functions that need to take place on the router
+    on a regular basis
+    """
 
     def __init__(self, options):
         DaemonBase.__init__(self, options)
         self.kill_switch = False
         self.loops = 0
-        self.downloader = Downloader()
-        self.dns_cache_mon = DnsCacheMon("/tmp/dnsmasq.log", ALLOWED_NAMES,
+        self.downloader = Downloader(options)
+        self.uploader = Uploader(options)
+        self.policy_mgr = PolicyMgr("/tmp/dnsmasq.log", ALLOWED_NAMES,
             self.options)
-        print('Loading initial rules....')
-        rules_loaded = self.dns_cache_mon.initial_load()
-        print('Loaded %s targets.' % rules_loaded)
+        self.policy_mgr.prep_system()
+        self.policy_mgr._rotate_log()
+        rules_loaded = self.policy_mgr.initial_load()
 
     def main_loop(self):
+        """
+        Runs forever. We're a daemon
+        """
         self.log('Starting dri...')
 
         while not self.kill_switch:
             start_time = time.time()
             while time.time() < (start_time + INTER_LOOP_SLEEP):
                 try:
-                    has_more = self.dns_cache_mon.check_for_new_stuff()
+                    has_more = self.policy_mgr.check_for_new_stuff()
                     if not has_more:
                         time.sleep(1)
                 except (PolicyMgrException, CommandException):
@@ -68,7 +71,7 @@ class DriDaemon(DaemonBase):
             except (DownloadException, CommandException):
                 self.log('Help! Downloading')
             try:
-                upload_arp_table()
+                self.uploader.upload_arp_table()
                 log_open_files("uploader")
             except (UploadException, CommandException):
                 self.log('Help! Uploading')
