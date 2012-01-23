@@ -13,6 +13,113 @@
   fields:
     name: blocked
     description: Device has no access to the Internet
+- model: frontend.trafficpolicy
+  pk: 1
+  fields:
+    name: dri
+    description: Traffic required to manage the system
+    policy: 2
+- model: frontend.trafficpolicy
+  pk: 2
+  fields:
+    name: google
+    description: All traffic to and from Google
+    policy: 2
+- model: frontend.trafficpolicy
+  pk: 3
+  fields:
+    name: utilities
+    policy: 2
+- model: frontend.trafficpolicy
+  pk: 4
+  fields:
+    name: time
+    policy: 2
+- model: frontend.trafficpolicy
+  pk: 5
+  fields:
+    name: weather
+    policy: 2
+- model: frontend.trafficpolicy
+  pk: 6
+  fields:
+    name: learning
+    policy: 2
+- model: frontend.trafficpolicy
+  pk: 6
+  fields:
+    name: mapping
+    policy: 2
+- model: frontend.trafficpolicy
+  pk: 6
+  fields:
+    name: podcasts
+    policy: 2
+- model: frontend.trafficmatcher
+  pk: 1
+  fields:
+    regex: "freezing-frost-9935.herokuapp.com"
+    traffic_policy: 1
+- model: frontend.trafficmatcher
+  pk: 2
+  fields:
+    regex: ".*.googleapis.com"
+    traffic_policy: 1
+- model: frontend.trafficmatcher
+  pk: 3
+  fields:
+    regex: ".*.google.com"
+    traffic_policy: 2
+- model: frontend.trafficmatcher
+  pk: 4
+  fields:
+    regex: ".*.gstatic.com"
+    traffic_policy: 2
+- model: frontend.trafficmatcher
+  pk: 5
+  fields:
+    regex: ".*.lastpass.com"
+    traffic_policy: 3
+- model: frontend.trafficmatcher
+  pk: 6
+  fields:
+    regex: ".*.evernote.com"
+    traffic_policy: 3
+- model: frontend.trafficmatcher
+  pk: 7
+  fields:
+    regex: ".*.nist.gov"
+    traffic_policy: 4
+- model: frontend.trafficmatcher
+  pk: 8
+  fields:
+    regex: ".*.pool.ntp.org"
+    traffic_policy: 4
+- model: frontend.trafficmatcher
+  pk: 9
+  fields:
+    regex: ".*.accuweather.com"
+    traffic_policy: 5
+- model: frontend.trafficmatcher
+  pk: 10
+  fields:
+    regex: ".*.dictionary.com"
+    traffic_policy: 6
+- model: frontend.trafficmatcher
+  pk: 11
+  fields:
+    regex: ".*.wikipedia.org"
+    traffic_policy: 6
+- model: frontend.trafficmatcher
+  pk: 12
+  fields:
+    regex: ".*gpsonextra.net"
+    traffic_policy: 7
+- model: frontend.trafficmatcher
+  pk: 13
+  fields:
+    regex: ".*.feedburner.net"
+    traffic_policy: 8
 - model: frontend.devicetype
   pk: 1
   fields:

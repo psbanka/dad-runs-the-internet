@@ -4,7 +4,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from dojango.decorators import json_response
 from forms import DeviceForm, ArpUploadForm, LoginForm
-from models import ArpDocument
+from models import ArpDocument, TrafficPolicy
 from django.core.context_processors import csrf
 from models import DeviceType, Device, Policy, TemporaryApproval
 from django.http import HttpResponse
@@ -26,6 +26,7 @@ def index(request):
         context_instance=RequestContext(request))
 
 def login_get(request):
+    "Obtain the login form"
     if request.method != 'GET':
         return HttpResponse("Use a GET")
 
@@ -36,6 +37,7 @@ def login_get(request):
 
 @json_response
 def login_post(request):
+    "Attempt to log in"
     if request.method != 'POST':
         return HttpResponse("Use a POST")
     model = {}
@@ -57,6 +59,14 @@ def login_post(request):
         model["success"] = False
         model["message"] = "Invalid username and/or password"
     return model
+
+@json_response
+def allowed_traffic(request):
+    """
+    Obtain a list of current allowed websites for low-privilege users
+    """
+    records = TrafficPolicy.objects.all()
+    return [record.regex for record in records]
 
 def _upload_process(arp_data):
     """
