@@ -11,6 +11,16 @@ class Policy(models.Model):
     name = models.CharField(max_length = 17)
     description = models.CharField(max_length = 150)
 
+    def dump_exceptions(self):
+        """
+        There are exceptions to a policy. This will show them all as a dictionary of lists
+        """
+        output = {}
+        for tp_record in TrafficPolicy.objects.filter(policy = self.id):
+            tm_records = TrafficMatcher.objects.filter(traffic_policy = tp_record.id)
+            output[tp_record.name] = [rec.regex for rec in tm_records]
+        return output
+
 class TrafficPolicy(models.Model):
     """
     Applies a set of filters to be implemented when a policy is in place for
@@ -26,7 +36,7 @@ class TrafficMatcher(models.Model):
     that are used to tag traffic
     """
     regex = models.CharField(max_length = 150)
-    traffic_policy = models.ForeignKey(Policy, null=False)
+    traffic_policy = models.ForeignKey(TrafficPolicy, null=False)
 
 class DeviceType(models.Model):
     """

@@ -1,6 +1,8 @@
 from django.utils import unittest
 
-from views import _upload_process, iptables_download, enable_device
+from router_views import _upload_process, iptables_download
+from device_views import enable_device
+from policy_views import allowed_traffic
 from models import Device, Policy, TemporaryApproval
 import json
 from mock import Mock
@@ -103,10 +105,27 @@ class TestUpload(unittest.TestCase):
         self.assertEqual(expected_blocked, response_dict['blocked'])
 
         request = Mock()
-        request.POST = { "device_name": '58:94:6b:a4:da:bc', "duration": 30 }
+        request.POST = { "mac_address": '58:94:6b:a4:da:bc', "duration": 30 }
         request.method = "POST"
         response = enable_device(request)
         response_dict = json.loads(response._get_content()[5:])
         self.assertEqual(response_dict['success'], True)
         self.assertEqual(response_dict['message'], 'Saved')
         
+    def test_download_policy(self):
+        request = Mock()
+        request.GET = {}
+        request.method = "GET"
+        response = allowed_traffic(request)
+        response_dict = json.loads(response._get_content()[5:])
+
+        expected = {u'dri': [u'freezing-frost-9935.herokuapp.com', u'.*.googleapis.com'],
+                    u'google': [u'.*.google.com', u'.*.gstatic.com'],
+                    u'podcasts': [u'.*.dictionary.com', u'.*.wikipedia.org'],
+                    u'time': [u'.*.nist.gov', u'.*.pool.ntp.org'],
+                    u'utilities': [u'.*.lastpass.com', u'.*.evernote.com'],
+                    u'weather': [u'.*.accuweather.com']}
+        self.maxDiff = None
+
+        self.assertEqual(response_dict['success'], True)
+        self.assertEqual(response_dict['message']['upon-request'], expected)

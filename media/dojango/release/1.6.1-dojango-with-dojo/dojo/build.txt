@@ -1,0 +1,26 @@
+Files baked into this build:
+
+dojo.js:
+./jslib/dojoGuardStart.jsfrag
+./../../dojo/_base/_loader/bootstrap.js
+./../../dojo/_base/_loader/loader.js
+./../../dojo/_base/_loader/hostenv_browser.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/lang.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/array.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/declare.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/connect.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/Deferred.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/json.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/Color.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/window.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/event.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/html.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/NodeList.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/query.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/xhr.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/fx.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base/browser.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/_base.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/date/stamp.js
+/app/media/dojango/release/1.6.1-dojango-with-dojo/dojo/parser.js
+./jslib/dojoGuardEnd.jsfrag

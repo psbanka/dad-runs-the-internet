@@ -1,11 +1,9 @@
 import time
 import sys
-import os
 from downloader import Downloader
 from uploader import Uploader
 from PolicyMgr import PolicyMgr
 from util import log_open_files
-import json
 from DaemonBase import DaemonBase
 
 from Exceptions import DownloadException, UploadException
@@ -43,7 +41,7 @@ class DriDaemon(DaemonBase):
             self.options)
         self.policy_mgr.prep_system()
         self.policy_mgr._rotate_log()
-        rules_loaded = self.policy_mgr.initial_load()
+        self.policy_mgr.initial_load()
 
     def main_loop(self):
         """
@@ -87,5 +85,6 @@ if __name__ == "__main__":
             self.no_daemonize = True
             self.verbose = False
             self.test = False
+            self.server_url = "http://freezing-frost-9935.herokuapp.com"
 
     DriDaemon(Options()).main_loop()
