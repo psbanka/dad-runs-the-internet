@@ -88,6 +88,7 @@ if __name__ == "__main__":
             self.no_daemonize = True
             self.verbose = False
             self.test = False
+            self.prep_system = True
             self.max_log_size = 500
             self.no_load = False
             self.server_url = "http://freezing-frost-9935.herokuapp.com"

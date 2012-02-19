@@ -4,6 +4,7 @@ from util import run_or_die, OK
 import PolicyMgr
 from commands import getstatusoutput as gso
 from Exceptions import DownloadException
+from Exceptions import CommandException
 import json
 import optparse
 from pprint import pprint
@@ -76,7 +77,13 @@ class Downloader(DaemonBase):
         We need to obtain policy data from our server so we can hand it off
         to PolicyMgr
         """
-        return self._json_request('policies')
+        try:
+            allowed_traffic = self._json_request('policies').get('message').get('upon-request')
+        except CommandException as cex:
+            print cex.cmd
+            print cex.output
+            raise cex
+        return allowed_traffic
 
     def pull_json_configs(self):
         "Go grab data from the server"

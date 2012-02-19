@@ -106,6 +106,7 @@ class PolicyMgr(DaemonBase):
         self.file_name = file_name
         self.allowed_names = allowed_names
         self.allowed_sites = {}
+        from pprint import pprint;pprint(allowed_names)
         for name, regex_strings in allowed_names.iteritems():
             self.allowed_sites[name] = AllowedSite(name, regex_strings, options)
 
@@ -122,6 +123,8 @@ class PolicyMgr(DaemonBase):
         self.cname_cache = {}
         self.published_ips = set()
         self.file_handle = None
+        if options.prep_system:
+            self.prep_system()
         self._open_file()
 
     def prep_system(self):
@@ -136,7 +139,10 @@ class PolicyMgr(DaemonBase):
         cmd  = "LD_PRELOAD=/opt/lib/libuClibc-0.9.28.so "
         cmd += "/opt/sbin/dnsmasq -C "
         cmd += "/opt/home/dev/work/dri/router/dnsmasq.conf"
-        os.system(cmd + "2> /dev/null")
+        os.system(cmd)
+        while not os.path.isfile('/tmp/dnsmasq.log'):
+            print ("waiting for /tmp/dnsmasq.log to show up...")
+            time.sleep(1)
 
     def _open_file(self):
         """Get our file handle working"""
