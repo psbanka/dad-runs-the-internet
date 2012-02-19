@@ -7,8 +7,7 @@ class DaemonBase(object):
 
     def log(self, message):
         "Depending on whether we're daemonized, log to screen or syslog"
-        if self.options.no_daemonize:
+        if self.options.verbose:
             print(message)
-        else:
-            syslog.syslog(message)
+        syslog.syslog(message)
 

@@ -43,7 +43,7 @@ class Downloader(DaemonBase):
     def __init__(self, options):
         DaemonBase.__init__(self, options)
 
-    def run(self):
+    def get_addresses(self):
         "Perform all necessary actions"
         try:
             configs = self.pull_json_configs()
@@ -52,9 +52,9 @@ class Downloader(DaemonBase):
         cmds = make_rules(configs)
         self.implement_rules(cmds)
 
-    def pull_json_configs(self):
-        "Go grab data from the server"
-        cmd = "curl %s/iptables_download/ 2>/dev/null" % self.options.server_url
+    def _json_request(self, path):
+        """Obtain JSON data from our server"""
+        cmd = "curl %s/%s/ 2>/dev/null" % (self.options.server_url, path)
         curl_output = run_or_die(cmd)
         
         configs = {}
@@ -70,6 +70,17 @@ class Downloader(DaemonBase):
                 pprint(curl_output)
             raise DownloadException(self.options.server_url, curl_output)
         return configs
+
+    def get_allowed_traffic(self):
+        """
+        We need to obtain policy data from our server so we can hand it off
+        to PolicyMgr
+        """
+        return self._json_request('policies')
+
+    def pull_json_configs(self):
+        "Go grab data from the server"
+        return self._json_request('iptables_download')
 
     def implement_rules(self, cmds):
         "Actually run the rules that we put together"

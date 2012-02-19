@@ -37,11 +37,12 @@ class DriDaemon(DaemonBase):
         self.loops = 0
         self.downloader = Downloader(options)
         self.uploader = Uploader(options)
-        self.policy_mgr = PolicyMgr("/tmp/dnsmasq.log", ALLOWED_NAMES,
+        self.allowed_traffic = self.downloader.get_allowed_traffic()
+        self.policy_mgr = PolicyMgr("/tmp/dnsmasq.log", self.allowed_traffic,
             self.options)
         self.policy_mgr.prep_system()
-        self.policy_mgr._rotate_log()
         self.policy_mgr.initial_load()
+        self.policy_mgr.rotate_log()
 
     def main_loop(self):
         """
@@ -64,7 +65,9 @@ class DriDaemon(DaemonBase):
                 if self.loops > MAX_LOOPS:
                     sys.exit(0)
             try:
-                self.downloader.run()
+                self.downloader.get_addresses()
+                allowed_traffic = self.downloader.get_allowed_traffic()
+                self.policy_mgr.process_new_allowed(allowed_traffic)
                 log_open_files("downloader")
             except (DownloadException, CommandException):
                 self.log('Help! Downloading')
@@ -85,6 +88,8 @@ if __name__ == "__main__":
             self.no_daemonize = True
             self.verbose = False
             self.test = False
+            self.max_log_size = 500
+            self.no_load = False
             self.server_url = "http://freezing-frost-9935.herokuapp.com"
 
     DriDaemon(Options()).main_loop()

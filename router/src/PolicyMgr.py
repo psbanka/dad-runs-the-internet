@@ -3,7 +3,9 @@ We want to watch the dnsmasq server and determine what IP addresses are being
 handed out. We have a list of names that we are allowing and based on that list
 of names, we're going to dynamically provide IPTables rules for them.
 """
+
 import re
+import sys
 import time
 import os, stat
 from util import OK
@@ -29,10 +31,21 @@ class AllowedSite(object):
 
     def __init__(self, name, regex_strings, options):
         self.name = name
+        self.original_regex = set(regex_strings)
         self.regex_set = set([re.compile(regex_str) for regex_str in regex_strings])
         self.options = options
         self.ip_addresses = set([])
         self.cnames = set()
+
+    def check_regex_against_server(self, server_regex):
+        """
+        We are getting a new list of regex from the server. Is it the same
+        as what we've been given before?
+        """
+        output = True
+        if set(server_regex) != self.original_regex:
+            output = False
+        return output
 
     def new_cname(self, cname, actual_name):
         """
@@ -83,7 +96,13 @@ class PolicyMgr(DaemonBase):
     "Manages IP addresses for sites we're interested in granting access to"
 
     def __init__(self, file_name, allowed_names, options):
+        """
+        @param allowed_names: a dictionary of name: regex_list values from
+            the server. This gets turned into a dictionary of AllowedSite
+            objects
+        """
         DaemonBase.__init__(self, options)
+        self.max_log_size = options.max_log_size
         self.file_name = file_name
         self.allowed_names = allowed_names
         self.allowed_sites = {}
@@ -103,6 +122,7 @@ class PolicyMgr(DaemonBase):
         self.cname_cache = {}
         self.published_ips = set()
         self.file_handle = None
+        self._open_file()
 
     def prep_system(self):
         """
@@ -116,36 +136,47 @@ class PolicyMgr(DaemonBase):
         cmd  = "LD_PRELOAD=/opt/lib/libuClibc-0.9.28.so "
         cmd += "/opt/sbin/dnsmasq -C "
         cmd += "/opt/home/dev/work/dri/router/dnsmasq.conf"
-        os.system(cmd)
+        os.system(cmd + "2> /dev/null")
 
-    def _rotate_log(self):
+    def _open_file(self):
+        """Get our file handle working"""
+        if not self.file_handle:
+            self.file_handle = open(self.file_name, 'r')
+
+    def _close_file(self):
+        "close it"
+        if self.file_handle:
+            self.file_handle.close()
+        self.file_handle = None
+
+    # Tested
+    def rotate_log(self, wait_for_log_file = True):
         """
         We have a need to rotate logs periodically or the system will
         run out of disk space
         """
-        size = os.stat('/tmp/dnsmasq.log')[stat.ST_SIZE] / 1024.0
-        if size < MAX_LOG_SIZE:
-            # Don't rotate...
-            if not self.file_handle:
-                self.file_handle = open(self.file_name, 'r')
-            return
-        if self.file_handle:
-            self.file_handle.close()
+        size = os.stat(self.file_name)[stat.ST_SIZE] / 1024.0
+        if size < self.max_log_size: # Don't rotate...
+            return False
+        self._close_file()
         self.log("Rotating log... (%s MB)" % (size ))
         os.system('rm -f %s' % self.file_name)
-        os.system('killall -s USR2 dnsmasq')
-        while not os.path.isfile(self.file_name):
-            time.sleep(1)
-            self.log("Waiting for log file to be created...")
-        self.file_handle = open(self.file_name, 'r')
+        os.system('killall -s USR2 dnsmasq 2> /dev/null')
+        os.system('touch %s' % self.file_name)
+        if wait_for_log_file:
+            while not os.path.isfile(self.file_name):
+                time.sleep(1)
+                self.log("Waiting for log file to be created...")
+        self._open_file()
         self.current_position = 0
+        return True
 
+    # Tested
     def initial_load(self):
         """
         Initial load of the whole log file
         """
-        if 1 == 2:
-        #if self.options.test:
+        if self.options.no_load:
             self.log("Skipping initial load due to testing.")
             self.file_handle.seek(0, 2) # Seek to end of file
             self.current_position = self.file_handle.tell()
@@ -159,9 +190,9 @@ class PolicyMgr(DaemonBase):
             rules_loaded += self._parse_and_implement(new_line)
         elapsed = time.time() - start_time
         self.log("Loaded %s rules in %s seconds." % (rules_loaded, elapsed))
-        self._rotate_log()
         return rules_loaded
 
+    # Tested
     def check_for_new_stuff(self):
         """
         Tail our log, seeing if there are any lines to pull out
@@ -172,24 +203,21 @@ class PolicyMgr(DaemonBase):
             new_rules += self._parse_and_implement(line)
         return new_rules
 
+    # Tested
     def _tail(self):
-        """Reads 'lines' lines from file_handle.
-        The return value is a tuple in the form ``(lines, has_more)`` where
-        `has_more` is an indicator that is `True` if there are more lines in the file.
         """
-        self._rotate_log()
+        Reads a line from self.file_handle
+        """
         self.file_handle.seek(self.current_position, 0)
         lines = self.file_handle.read().splitlines()
         if self.options.verbose:
             self.log("position in the file: %s" % self.current_position)
             self.log("number of lines read: %s" % len(lines))
         self.current_position = self.file_handle.tell()
+        self.rotate_log()
         return lines
 
-    def close(self):
-        "close our file handle"
-        self.file_handle.close()
-
+    # Tested
     def _parse_and_implement(self, line):
         """
         Go through lines read from the log file and implement any new
@@ -198,6 +226,7 @@ class PolicyMgr(DaemonBase):
         self._parse(line)
         return self._build_new_rules()
 
+    # Tested
     def _build_new_rules(self):
         """
         Try to find any new rules to create
@@ -214,9 +243,11 @@ class PolicyMgr(DaemonBase):
             self.published_ips.update([new_ip])
         return len(new_ips)
 
+    # Tested
     def remove_site(self, site_name):
         "If we decide there is a site we no longer want to have..."
         current_ips = set()
+        removed_ips = 0
         del self.allowed_sites[site_name]
         for allowed_site in self.allowed_sites.values():
             current_ips.update(allowed_site.ip_addresses)
@@ -225,22 +256,52 @@ class PolicyMgr(DaemonBase):
             cmd = "iptables -D %s -d %s -j ACCEPT" % (IPTABLES_TARGET, deleted_ip)
             self._implement_rules([cmd])
             self.published_ips.remove(deleted_ip)
+            removed_ips += 1
+        return removed_ips
 
+    # Tested
     def add_site(self, site_name, regex_strings):
         "We would like to add a site after the fact"
         self.allowed_sites[site_name] = AllowedSite(site_name, regex_strings, self.options)
         self.allowed_sites[site_name].build_data(self.ip_cache, self.cname_cache)
-        self._build_new_rules()
+        return self._build_new_rules()
 
+    # Tested
+    def process_new_allowed(self, allowed_names):
+        """
+        We have been handed a new list of allowed names from the server.
+        Determine if it's different from what we had, if so deal with it.
+        """
+        server_names = set(allowed_names.keys())
+        local_names = set(self.allowed_sites.keys())
+        names_to_remove = local_names - server_names
+        names_to_add    = server_names - local_names
+
+        for name in names_to_remove:
+            self.remove_site(name)
+        for name in names_to_add:
+            self.add_site(name, allowed_names[name])
+
+        for site_name, server_regex in allowed_names.iteritems():
+            if not self.allowed_sites[site_name].check_regex_against_server(server_regex):
+                print "server regex list has changed..."
+                self.remove_site(site_name)
+                self.add_site(site_name, server_regex)
+        return names_to_add, names_to_remove
+
+    # Tested
     def _parse(self, line):
-        "Gather IP addresses from a line of DNSMasq log output"
+        """
+        Gather IP addresses from a line of DNSMasq log output.
+        Modifies self.cname_cache and self.ip_cache.
+        """
         if not 'reply' in line:
             self.watch_for_cname = None
-            return None
+            return
         matches = self.generic_matcher.findall(line)
         if not matches:
             self.watch_for_cname = None
-            return None
+            return
 
         for match in matches:
             name, address = match
@@ -276,6 +337,7 @@ class PolicyMgr(DaemonBase):
                     allowed_site.new_address(name, address)
 
     # TODO: Refactor with downloader.py
+    # Tested
     def _implement_rules(self, cmds):
         "Actually run the rules that we put together"
         if self.options.test:
@@ -310,29 +372,47 @@ def main():
             self.no_daemonize = True
             self.verbose = True
             self.test = True
+            self.no_load = False
+            self.max_log_size = 700
     allowed_names = {"google": [".*google\.com", "ssl\.gstatic\.com",],
                      "dri": ["freezing\-frost\-9935\.herokuapp\.com",
                              "ajax\.googleapis\.com",],
                      "lastpass": [ "lastpass\.com"],
                      "dev": ["pbanka\.atlassian\.net"],
-                     "youtube": ["accounts\.youtube\.com"],
                     }
     file_name = sys.argv[1]
     tmpfile_name = "tmp_dnsmasq.log"
-    os.system('cp %s %s' % file_name, tmpfile_name)
+    os.system('cp %s %s' % (file_name, tmpfile_name))
     policy_mgr = PolicyMgr(tmpfile_name, allowed_names, Options())
     policy_mgr.initial_load()
-    for i in xrange(1,10):
-        print "Checking..."
-        policy_mgr.check_for_new_stuff()
-        time.sleep(1)
-    policy_mgr.dump()
-    policy_mgr.remove_site("dri")
-    #policy_mgr.remove_site("lastpass")
-    #policy_mgr.add_site("lastpass", [ "lastpass\.com"])
-    policy_mgr.add_site('dri', ["freezing\-frost\-9935\.herokuapp\.com",
-                             "ajax\.googleapis\.com",])
 
+    print '---------------------------------------------------- initial'
+    policy_mgr.dump()
+    print '---------------------------------------------------- add youtube'
+    allowed_names["youtube"] = ["accounts\.youtube\.com"]
+    policy_mgr.process_new_allowed(allowed_names)
+    policy_mgr.dump()
+
+    print '---------------------------------------------------- remove dri'
+    del allowed_names["dri"]
+    policy_mgr.process_new_allowed(allowed_names)
+    policy_mgr.dump()
+
+    print '---------------------------------------------------- modify google'
+    allowed_names['google'] = [".*google\.com"]
+    policy_mgr.process_new_allowed(allowed_names)
+    policy_mgr.dump()
+
+    #for i in xrange(1,10):
+    #    print "Checking..."
+    #    policy_mgr.check_for_new_stuff()
+    #    time.sleep(1)
+    #policy_mgr.dump()
+    #policy_mgr.remove_site("dri")
+    ##policy_mgr.remove_site("lastpass")
+    ##policy_mgr.add_site("lastpass", [ "lastpass\.com"])
+    #policy_mgr.add_site('dri', ["freezing\-frost\-9935\.herokuapp\.com",
+    #                         "ajax\.googleapis\.com",])
 
 if __name__ == "__main__":
     main()
