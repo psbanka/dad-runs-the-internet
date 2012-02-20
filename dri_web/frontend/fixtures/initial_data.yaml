@@ -46,12 +46,12 @@
     name: learning
     policy: 2
 - model: frontend.trafficpolicy
-  pk: 6
+  pk: 7
   fields:
     name: mapping
     policy: 2
 - model: frontend.trafficpolicy
-  pk: 6
+  pk: 8
   fields:
     name: podcasts
     policy: 2
