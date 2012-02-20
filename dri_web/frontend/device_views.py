@@ -24,6 +24,7 @@ def get_known_devices(request):
         if record.mac_address == '<incomplete>':
             continue
         output[record.mac_address] = {'name': record.name,
+                                      'suggested_name': record.suggested_name,
                                       'type': record.device_type,
                                       'policy': record.policy,
                                       'is_allowed': record.is_allowed(),
@@ -44,7 +45,7 @@ def enable_device(request):
         output['success'] = False
         output["message"] = "Must use a POST"
         return output
-    mac_address = request.POST.get("mac_address")
+    mac_address = request.POST.get("mac_address").upper()
     provided_duration = request.POST.get("duration", "30")
     logger.info("IN ENABLE-DEVICES: %s" % mac_address)
     try:
@@ -85,7 +86,7 @@ def _save_device(self, request, mac_address):
         submitted_device_type = request.POST.get('device_type')
         submitted_device_name = request.POST.get('device_name')
         try:
-            device = Device.objects.get(mac_address=mac_address)
+            device = Device.objects.get(mac_address=mac_address.upper())
         except Device.DoesNotExist:
             logger.info("NO object! Bailing out!")
             return HttpResponse("Name: (%s) does not exist in the database." % mac_address)
@@ -115,23 +116,26 @@ def device(request, mac_address):
     to edit one: give it a name, assign it a policy, whatever.
     """
     device_name = "Unknown"
+    suggested_device_name = "Unknown"
     if request.method == 'POST':
-        return _save_device(request, mac_address)
+        return _save_device(request, mac_address.upper())
     else:
         try:
-            device = Device.objects.get(mac_address=mac_address)
+            device = Device.objects.get(mac_address=mac_address.upper())
             policy = None if not device.policy else device.policy.name
             device_type = None if not device.device_type else device.device_type.name
             form = DeviceForm(initial={"device_name": device.name,
-                                       "mac_address": device.mac_address,
+                                       "mac_address": device.mac_address.upper(),
                                        "device_type": device_type,
                                        "device_allowed": str(device.is_allowed()),
                                        "policy"     : policy})
             device_name = device.name
+            suggested_device_name = device.suggested_name
         except Device.DoesNotExist:
             return HttpResponse("can't look that record up: (%s)" % mac_address)
 
-    model = {"form": form, "device_name": device_name, "mac_address": mac_address}
+    model = {"form": form, "device_name": device_name, "mac_address": mac_address.upper(),
+             "suggested_device_name": suggested_device_name}
     model.update(csrf(request))
     return render_to_response("frontend/edit_device_form.html", model)
 

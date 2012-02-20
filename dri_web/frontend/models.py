@@ -51,6 +51,7 @@ class Device(models.Model):
     home firewall and out to the network.
     """
     name = models.CharField(max_length = 50, null=True)
+    suggested_name = models.CharField(max_length = 50, null=True)
     mac_address = models.CharField(max_length = 17, primary_key = True)
     ip_address = models.CharField(max_length = 17)
     policy = models.ForeignKey(Policy, null=True)

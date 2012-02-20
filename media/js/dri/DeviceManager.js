@@ -30,7 +30,10 @@ dojo.declare("dri.DeviceManager", [dijit._Widget, dri._Manager], {
                 if (!tree[description]) {
                     tree[description] = [];
                 }
-                tree[description].push({'name': device.name, 'mac_address': mac_address});
+                tree[description].push({'name': device.name,
+                    'suggested_name': device.suggested_name,
+                    'mac_address': mac_address
+                });
             }
         }
         return tree;
@@ -50,7 +53,7 @@ dojo.declare("dri.DeviceManager", [dijit._Widget, dri._Manager], {
                     var devices = tree[description];
                     var list_holder = dojo.create("ul", {}, container);
                     for (i=0; i<devices.length; i++) {
-                        var device_name = devices[i].name || devices[i].mac_address;
+                        var device_name = devices[i].name || devices[i].suggested_name || devices[i].mac_address;
                         var list_item = dojo.create("li", {}, list_holder);
                         var button_name = devices[i].mac_address + "_manage_button";
                         var button_spec = { id: button_name,

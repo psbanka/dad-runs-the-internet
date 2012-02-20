@@ -1,7 +1,7 @@
 {% extends "dojango/base.html" %}
 {% block dojango_content %}
 
-    <div dojoType="dijit.TitlePane" region="center" title="{{ device_name }}" id='edit_pane'>
+    <div dojoType="dijit.TitlePane" region="center" title="{{ device_name }} / {{ suggested_device_name }}" id='edit_pane'>
 
         <hr class="spacer">
         <form method="POST" id="form_{{mac_address}}" dojoType="dijit.form.Form">
