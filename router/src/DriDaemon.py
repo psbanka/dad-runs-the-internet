@@ -86,12 +86,12 @@ if __name__ == "__main__":
     class Options:
         def __init__(self):
             self.no_daemonize = True
-            self.verbose = False
-            self.test = False
-            self.prep_system = True
+            self.verbose = True
+            self.test = True
+            self.prep_system = False
             self.max_log_size = 500
             self.no_load = False
-            self.server_url = "http://freezing-frost-9935.herokuapp.com"
+            self.server_url = "https://lifesaver-15732.firebaseio.com/rules"
         def __str__(self):
             return """
               %(p.no_daemonize)

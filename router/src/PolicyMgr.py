@@ -77,7 +77,7 @@ class AllowedSite(object):
     def build_data(self, ip_cache, cname_cache):
         """
         We need to go through the entire cache and build the list of
-        ipaddresses that we care about.
+        ip addresses that we care about.
         """
         found = True
         while found:
@@ -385,6 +385,8 @@ def main():
                              "ajax\.googleapis\.com",],
                      "lastpass": [ "lastpass\.com"],
                      "dev": ["pbanka\.atlassian\.net"],
+                     "info": ["www.wikipedia.org"],
+                     "productivity": ["www.canva.com"],
                     }
     file_name = sys.argv[1]
     tmpfile_name = "tmp_dnsmasq.log"
