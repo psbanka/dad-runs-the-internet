@@ -76,11 +76,11 @@ class DriDaemon(DaemonBase):
                 log_open_files("uploader")
             except (UploadException, CommandException):
                 self.log('Help! Uploading')
-            #print "I LIVE"
+            print("I LIVE")
 
     def terminate(self):
         self.kill_switch = True
-        print "dying"
+        print("dying")
 
 if __name__ == "__main__":
     class Options:
@@ -92,5 +92,15 @@ if __name__ == "__main__":
             self.max_log_size = 500
             self.no_load = False
             self.server_url = "http://freezing-frost-9935.herokuapp.com"
+        def __str__(self):
+            return """
+              %(p.no_daemonize)
+              %(p.verbose)
+              %(p.test)
+              %(p.prep_system)
+              %(p.max_log_size)
+              %(p.no_load)
+              %(p.server_url)
+            """
 
     DriDaemon(Options()).main_loop()

@@ -42,6 +42,7 @@ def make_rules(configs):
 class Downloader(DaemonBase):
 
     def __init__(self, options):
+        print('options', options)
         DaemonBase.__init__(self, options)
 
     def get_addresses(self):
@@ -55,6 +56,9 @@ class Downloader(DaemonBase):
 
     def _json_request(self, path):
         """Obtain JSON data from our server"""
+        print('------------------------------------')
+        print(self.options)
+        print('------------------------------------')
         cmd = "curl %s/%s/ 2>/dev/null" % (self.options.server_url, path)
         curl_output = run_or_die(cmd)
         

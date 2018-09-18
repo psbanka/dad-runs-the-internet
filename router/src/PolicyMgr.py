@@ -141,7 +141,7 @@ class PolicyMgr(DaemonBase):
         cmd += "/opt/home/dev/work/dri/router/dnsmasq.conf"
         os.system(cmd)
         while not os.path.isfile('/tmp/dnsmasq.log'):
-            print ("waiting for /tmp/dnsmasq.log to show up...")
+            print("waiting for /tmp/dnsmasq.log to show up...")
             time.sleep(1)
 
     def _open_file(self):
@@ -290,7 +290,7 @@ class PolicyMgr(DaemonBase):
 
         for site_name, server_regex in allowed_names.iteritems():
             if not self.allowed_sites[site_name].check_regex_against_server(server_regex):
-                print "server regex list has changed..."
+                print("server regex list has changed...")
                 self.remove_site(site_name)
                 self.add_site(site_name, server_regex)
         return names_to_add, names_to_remove
@@ -311,8 +311,8 @@ class PolicyMgr(DaemonBase):
 
         for match in matches:
             name, address = match
-            #print ">> ", line
-            #print ">> name: %s / address: %s / watch: %s" % (name, address, self.watch_for_cname)
+            print(">> ", line)
+            print(">> name: %s / address: %s / watch: %s" % (name, address, self.watch_for_cname))
             if address == "<CNAME>":
                 if self.watch_for_cname != None: # cname points to a cname
                     self.cname_cache[self.watch_for_cname] = name
@@ -332,13 +332,13 @@ class PolicyMgr(DaemonBase):
                 else:
                     self.cname_cache[self.watch_for_cname] = name
                     _add_item(self.ip_cache, name, address)
-                    # print "Adding a cname AND an IP"
+                    print("Adding a cname AND an IP")
                     for allowed_site in self.allowed_sites.values():
                         allowed_site.new_cname(self.watch_for_cname, name)
                         allowed_site.new_address(name, address)
             else:
                 _add_item(self.ip_cache, name, address)
-                #print "Adding an a-record"
+                print("Adding an a-record")
                 for allowed_site in self.allowed_sites.values():
                     allowed_site.new_address(name, address)
 
@@ -348,9 +348,9 @@ class PolicyMgr(DaemonBase):
         "Actually run the rules that we put together"
         if self.options.test:
             if self.options.verbose:
-                print "This script would implement the following rules:"
+                print("This script would implement the following rules:")
                 for cmd in cmds:
-                    print "   %s" % cmd
+                    print("   %s" % cmd)
         else:
             for cmd in cmds:
                 if self.options.verbose:
@@ -364,13 +364,13 @@ class PolicyMgr(DaemonBase):
 
     def dump(self):
         "Show off what's going on"
-        print ">>> A-Records:"
+        print(">>> A-Records:")
         for key, value in self.ip_cache.iteritems():
-            print "A:: %20s: %d" % (key, len(value))
-        print ">>> cname_cache:"
+            print("A:: %20s: %d" % (key, len(value)))
+        print(">>> cname_cache:")
         for key, value in self.cname_cache.iteritems():
-            print "CNAME: %20s: %s" % (key, value)
-        #pprint(self.ip_cache)
+            print("CNAME: %20s: %s" % (key, value))
+        pprint(self.ip_cache)
 
 def main():
     class Options:
@@ -392,28 +392,28 @@ def main():
     policy_mgr = PolicyMgr(tmpfile_name, allowed_names, Options())
     policy_mgr.initial_load()
 
-    print '---------------------------------------------------- initial'
+    print('---------------------------------------------------- initial')
     policy_mgr.dump()
-    print '---------------------------------------------------- add youtube'
+    print('---------------------------------------------------- add youtube')
     allowed_names["youtube"] = ["accounts\.youtube\.com"]
     policy_mgr.process_new_allowed(allowed_names)
     policy_mgr.dump()
 
-    print '---------------------------------------------------- remove dri'
+    print('---------------------------------------------------- remove dri')
     del allowed_names["dri"]
     policy_mgr.process_new_allowed(allowed_names)
     policy_mgr.dump()
 
-    print '---------------------------------------------------- modify google'
+    print('---------------------------------------------------- modify google')
     allowed_names['google'] = [".*google\.com"]
     policy_mgr.process_new_allowed(allowed_names)
     policy_mgr.dump()
 
-    #for i in xrange(1,10):
-    #    print "Checking..."
-    #    policy_mgr.check_for_new_stuff()
-    #    time.sleep(1)
-    #policy_mgr.dump()
+    for i in xrange(1,10):
+        print("Checking...")
+        policy_mgr.check_for_new_stuff()
+        time.sleep(1)
+    policy_mgr.dump()
     #policy_mgr.remove_site("dri")
     ##policy_mgr.remove_site("lastpass")
     ##policy_mgr.add_site("lastpass", [ "lastpass\.com"])
